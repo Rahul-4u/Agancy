@@ -1,4 +1,5 @@
 import AboutSection from "@/components/home/AboutSection";
+import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
 import Hero from "@/components/home/Hero";
 import PortfolioSection from "@/components/home/PortfolioSection";
@@ -26,6 +27,7 @@ export default function Home() {
       <ContactSection/>
       <UpcomingEvents/>
       <Testimonials/>
+      <BlogSection/>
       {/* এখানে পরে সার্ভিস এবং অন্যান্য সেকশন আসবে */}
     </main>
   );
