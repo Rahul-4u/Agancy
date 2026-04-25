@@ -4,39 +4,85 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // ✅ allowed in v5
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
   ADMIN
   HR
+  LEADER
   EMPLOYEE
   USER
 }
 
-
-
-// 
-
-model Attendance {
-  id         String   @id @default(uuid())
-  userId     String   // এমপ্লয়ি আইডি
-  user       User     @relation(fields: [userId], references: [id])
-  date       DateTime @default(now()) @db.Date
-  checkIn    DateTime?
-  checkOut   DateTime?
-  status     String   @default("Present") // Present, Late, Absent
-  createdAt  DateTime @default(now())
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
 }
 
-// User 
 model User {
-  id          String       @id @default(uuid())
-  email       String       @unique
-  password    String
-  name        String?
-  role        Role         @default(USER)
-  attendances Attendance[] // এই লাইনটি যোগ করুন
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id            String       @id @default(uuid())
+  email         String       @unique
+  password      String
+  name          String?
+  role          Role         @default(USER)
+  
+  // প্রোফাইল ডিটেইলস
+  designation   String?      // পজিশন (যেমন: Frontend Developer)
+  department    String?      // বিভাগ (যেমন: Tech, HR, Sales)
+  salary        Float?       // বেতন
+  phone         String?
+  
+  // রিলেশনশিপ
+  attendances   Attendance[]
+  tasksAssigned Task[]       @relation("AssignedTo") // এমপ্লয়ি হিসেবে পাওয়া টাস্ক
+  tasksCreated  Task[]       @relation("CreatedBy")  // লিডার/এডমিন হিসেবে তৈরি করা টাস্ক
+  leaves        Leave[]
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now()) @db.Date
+  checkIn   DateTime?
+  checkOut  DateTime?
+  status    String   @default("Present") // Present, Late, Absent, Holiday
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(PENDING)
+  priority    String     @default("Medium") // Low, Medium, High
+  deadline    DateTime?
+  
+  // রিলেশন
+  assignedToId String
+  assignedTo   User      @relation("AssignedTo", fields: [assignedToId], references: [id])
+  createdById  String
+  createdBy    User      @relation("CreatedBy", fields: [createdById], references: [id])
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Leave {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // Sick, Casual, Annual
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?
+  status      String   @default("Pending") // Pending, Approved, Rejected
+  
+  createdAt   DateTime @default(now())
 }

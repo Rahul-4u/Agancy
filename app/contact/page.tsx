@@ -1,6 +1,7 @@
 import ContactHero from '@/components/contact/ContactHero'
 import FaqSection from '@/components/contact/FaqSection'
 import ImitationForm from '@/components/contact/ImitationForm'
+import Newsletter from '@/components/home/Newsletter'
 import Navbar from '@/components/shared/Navbar'
 import React from 'react'
 
@@ -11,6 +12,7 @@ export default function page() {
       <ContactHero/>
       <ImitationForm/>
       <FaqSection/>
+      <Newsletter/>
     </div>
   )
 }
