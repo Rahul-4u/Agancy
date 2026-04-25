@@ -1,26 +1,23 @@
 @import "tailwindcss";
 
+@theme {
+  /* TechGuru কালারগুলো এখানে সেট করছি */
+  --color-background: #080b13;
+  --color-primary: #3065eb;
+  --color-accent-yellow: #ffd600;
+  --color-text-gray: #9faab7;
+  
+  /* এনিমেশন যোগ করছি */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* কাস্টম স্টাইল */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  background-color: var(--color-background);
+  color: white;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
   font-family: Arial, Helvetica, sans-serif;
 }

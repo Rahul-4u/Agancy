@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // ✅ allowed in v5
+}
+
+enum Role {
+  ADMIN
+  HR
+  EMPLOYEE
+  USER
+}
+
+
+
+// 
+
+model Attendance {
+  id         String   @id @default(uuid())
+  userId     String   // এমপ্লয়ি আইডি
+  user       User     @relation(fields: [userId], references: [id])
+  date       DateTime @default(now()) @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     String   @default("Present") // Present, Late, Absent
+  createdAt  DateTime @default(now())
+}
+
+// User 
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  role        Role         @default(USER)
+  attendances Attendance[] // এই লাইনটি যোগ করুন
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

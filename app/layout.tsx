@@ -26,8 +26,16 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // Hydration error ফিক্স করার জন্য নিচের লাইনটি যোগ করা হয়েছে
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body 
+        className="min-h-full flex flex-col"
+        // বডি ট্যাগেও এটি যোগ করা নিরাপদ
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }
