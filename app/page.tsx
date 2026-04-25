@@ -2,6 +2,7 @@ import AboutSection from "@/components/home/AboutSection";
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
 import Hero from "@/components/home/Hero";
+import Newsletter from "@/components/home/Newsletter";
 import PortfolioSection from "@/components/home/PortfolioSection";
 import PricingSection from "@/components/home/PricingSection";
 import ServicesSection from "@/components/home/ServicesSection";
@@ -28,6 +29,7 @@ export default function Home() {
       <UpcomingEvents/>
       <Testimonials/>
       <BlogSection/>
+      <Newsletter/>
       {/* এখানে পরে সার্ভিস এবং অন্যান্য সেকশন আসবে */}
     </main>
   );
