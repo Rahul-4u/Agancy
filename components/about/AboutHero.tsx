@@ -10,7 +10,6 @@ export default function AboutHero() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // ব্যাকগ্রাউন্ড ইমেজ জুম-ইন অ্যানিমেশন
       gsap.fromTo(bgRef.current, 
         { scale: 1.2, opacity: 0 }, 
         { scale: 1, opacity: 1, duration: 2, ease: "power2.out" }
