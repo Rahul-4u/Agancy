@@ -1,36 +1,28 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
+import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const body = await request.json();
+    const { email, name, password } = body;
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ message: "All fields are required" }, { status: 400 });
+    if (!email || !password) {
+      return new NextResponse("Missing data", { status: 400 });
     }
 
-    // ইউজার আগে থেকেই আছে কি না চেক করা
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return NextResponse.json({ message: "Email already in use" }, { status: 400 });
-    }
-
-    // পাসওয়ার্ড নিরাপদ করা (Hashing)
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ডাটাবেসে ইউজার তৈরি
-    const user = await prisma.user.create({
+    const user = await db.user.create({
       data: {
-        name,
         email,
+        name,
         password: hashedPassword,
-        role: "USER", // Default role
       },
     });
 
-    return NextResponse.json({ message: "User created!" }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    return NextResponse.json(user);
+  } catch (error: any) {
+    return new NextResponse("Registration Error", { status: 500 });
   }
 }
