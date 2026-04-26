@@ -1,39 +1,76 @@
 "use client";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Clock, LogOut, CheckSquare } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { 
+  LayoutDashboard, Users, Clock, LogOut, 
+  CheckSquare, Settings, Briefcase, UserCircle, Info 
+} from 'lucide-react';
 
 export default function Sidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname();
-  
-  const menu = [
-    { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Attendance', path: '/dashboard/attendance', icon: Clock },
-    { name: 'User Management', path: '/dashboard/users', icon: Users },
-    { name: 'Tasks', path: '/dashboard/tasks', icon: CheckSquare },
+
+  // এখানে তুমি খুব সহজেই নতুন পেজ বা রোল অ্যাড করতে পারবে
+  const menuConfig = [
+    // --- ADMIN ROUTES ---
+    { name: 'Admin Panel', path: '/dashboard/admin/admin-panel', icon: LayoutDashboard, roles: ['ADMIN'] },
+    
+    // --- HR ROUTES ---
+    { name: 'HR Desk', path: '/dashboard/hr/hr-panel', icon: Briefcase, roles: ['HR', 'ADMIN'] },
+    
+    // --- LEADER ROUTES ---
+    { name: 'Team Hub', path: '/dashboard/leader/leader-panel', icon: Users, roles: ['LEADER', 'ADMIN'] },
+    
+    // --- EMPLOYEE SPECIFIC ROUTES ---
+    { name: 'My Profile', path: '/dashboard/employee/profile', icon: UserCircle, roles: ['EMPLOYEE'] },
+    { name: 'Attendance', path: '/dashboard/employee/attendance', icon: Clock, roles: ['EMPLOYEE', 'ADMIN', 'HR'] },
+    { name: 'Work Details', path: '/dashboard/employee/details', icon: Info, roles: ['EMPLOYEE'] },
+    { name: 'My Tasks', path: '/dashboard/employee/employee-panel', icon: CheckSquare, roles: ['EMPLOYEE', 'ADMIN'] },
+    
+    // --- GENERAL USER ---
+    { name: 'Client View', path: '/dashboard/user/user-panel', icon: Settings, roles: ['USER', 'ADMIN'] },
   ];
 
+  // ইউজারের রোল অনুযায়ী ফিল্টার করা
+  const filteredMenu = menuConfig.filter(item => item.roles.includes(userRole));
+
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="text-2xl font-black text-white italic mb-10 px-2 tracking-tighter">Reback</div>
+    <div className="flex flex-col h-full p-6 text-white bg-slate-900">
+      {/* Logo Area */}
+      <div className="text-2xl font-black italic mb-10 px-2 tracking-tighter">
+        REBACK
+      </div>
       
-      <nav className="flex-1 space-y-2">
-        {menu.map((item) => (
-          <Link 
-            key={item.path} 
-            href={item.path} 
-            className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all font-semibold text-sm ${
-              pathname === item.path ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            <item.icon size={20} /> {item.name}
-          </Link>
-        ))}
+      {/* Navigation Area */}
+      <nav className="flex-1 space-y-2 overflow-y-auto custom-scrollbar">
+        {filteredMenu.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Link 
+              key={item.path} 
+              href={item.path} 
+              className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all font-semibold text-sm group ${
+                isActive 
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <item.icon size={20} className={`${isActive ? 'text-white' : 'group-hover:text-white'}`} /> 
+              {item.name}
+            </Link>
+          );
+        })}
       </nav>
 
-      <button className="flex items-center gap-4 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-2xl w-full transition-all font-bold text-sm">
-        <LogOut size={20} /> Logout
-      </button>
+      {/* Logout Area */}
+      <div className="pt-6 border-t border-slate-800">
+        <button 
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="flex items-center gap-4 px-4 py-3 text-rose-400 hover:bg-rose-500/10 rounded-2xl w-full transition-all font-bold text-sm"
+        >
+          <LogOut size={20} /> Logout
+        </button>
+      </div>
     </div>
   );
 }
