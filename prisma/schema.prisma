@@ -33,33 +33,34 @@ enum AttendanceStatus {
 
 // ২. ইউজার মডেল (User Model)
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String
-  name          String?
-  role          Role      @default(USER)
-  
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String?
+  role     Role    @default(USER)
+
   // প্রোফাইল ডিটেইলস
-  designation   String?   // যেমন: Frontend Developer
-  department    String?   // বিভাগ: Tech, HR, Sales
-  phone         String?
-  image         String?   // প্রোফাইল পিকচার
-  
+  designation String? // যেমন: Frontend Developer
+  department  String? // বিভাগ: Tech, HR, Sales
+  phone       String?
+  image       String? // প্রোফাইল পিকচার
+
   // ফিন্যান্স এবং সিডিউল
-  salary        Float?    @default(0)
-  joiningDate   DateTime? @default(now())
-  offDay        String?   @default("Friday") // সাপ্তাহিক ছুটির দিন
-  
+  salary      Float?    @default(0)
+  joiningDate DateTime? @default(now())
+  offDay      String?   @default("Friday") // সাপ্তাহিক ছুটির দিন
+
   // রিলেশনশিপ
   attendances   Attendance[]
   tasksAssigned Task[]       @relation("AssignedTo")
   tasksCreated  Task[]       @relation("CreatedBy")
   leaves        Leave[]
-  targets       Target[]     // এমপ্লয়ির মাসিক টার্গেট
-  payroll       Payroll[]    // বেতনের ইতিহাস
-  
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  targets       Target[] // এমপ্লয়ির মাসিক টার্গেট
+  payroll       Payroll[] // বেতনের ইতিহাস
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[]
 }
 
 // ৩. অ্যাটেনডেন্স (Attendance)
@@ -76,32 +77,32 @@ model Attendance {
 
 // ৪. টাস্ক ম্যানেজমেন্ট (Task)
 model Task {
-  id           String     @id @default(uuid())
-  title        String
-  description  String?
-  status       TaskStatus @default(PENDING)
-  priority     String     @default("Medium") // Low, Medium, High
-  deadline     DateTime?
-  
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(PENDING)
+  priority    String     @default("Medium") // Low, Medium, High
+  deadline    DateTime?
+
   assignedToId String
-  assignedTo   User       @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedTo   User   @relation("AssignedTo", fields: [assignedToId], references: [id])
   createdById  String
-  createdBy    User       @relation("CreatedBy", fields: [createdById], references: [id])
-  
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdBy    User   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ৫. টার্গেট ট্র্যাকিং (Monthly Target)
 model Target {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  month       String   // জানুয়ারি, ফেব্রুয়ারি ইত্যাদি
-  year        Int
-  goalAmount  Int      // কতগুলো প্রজেক্ট বা টাস্ক করতে হবে
-  completed   Int      @default(0)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month      String // জানুয়ারি, ফেব্রুয়ারি ইত্যাদি
+  year       Int
+  goalAmount Int // কতগুলো প্রজেক্ট বা টাস্ক করতে হবে
+  completed  Int      @default(0)
+  createdAt  DateTime @default(now())
 }
 
 // ৬. ছুটির হিসাব (Leave)
@@ -109,7 +110,7 @@ model Leave {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // Sick, Casual, Annual
+  type      String // Sick, Casual, Annual
   startDate DateTime
   endDate   DateTime
   reason    String?
@@ -119,16 +120,29 @@ model Leave {
 
 // ৭. পেরোল/বেতন রিপোর্ট (Payroll)
 model Payroll {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   month       String
   year        Int
   baseSalary  Float
-  bonus       Float?   @default(0)
-  deduction   Float?   @default(0) // কামাই বা লেট করার জন্য কাটাকাটি
+  bonus       Float?    @default(0)
+  deduction   Float?    @default(0) // কামাই বা লেট করার জন্য কাটাকাটি
   totalPaid   Float
-  status      String   @default("Unpaid") // Paid, Unpaid
+  status      String    @default("Unpaid") // Paid, Unpaid
   paymentDate DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+// ৭. team work
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String   @default("WIP")
+  teamName    String
+  assignedTo  String // Employee ID
+  user        User     @relation(fields: [assignedTo], references: [id])
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
