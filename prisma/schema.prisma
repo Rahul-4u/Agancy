@@ -70,6 +70,7 @@ model Attendance {
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   date         DateTime @default(now())
+  officeStartTime String?  @default("09:00 AM")
   checkIn      String?
   checkOut     String?
   status       String   @default("PRESENT") // Options: PRESENT, LATE, ABSENT, HOLIDAY
