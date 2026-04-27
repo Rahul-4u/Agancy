@@ -2,82 +2,107 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Clock, Briefcase, Wallet, CheckCircle2, AlertCircle } from "lucide-react";
 import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import AttendanceButtons from "@/components/AttendanceButtons";
 
 export default async function EmployeePanel() {
   const session = await getServerSession(authOptions);
 
-  // সিকিউরিটি চেক
   if (!session || (session.user as any).role !== "EMPLOYEE") {
     redirect("/dashboard");
   }
 
+  const userId = (session.user as any).id;
+
+  // Fetch dynamic data from Database
+  const userData = await db.user.findUnique({
+    where: { id: userId },
+    include: {
+      tasksAssigned: {
+        where: { status: "PENDING" }, // Only show incomplete tasks
+        take: 3,
+        orderBy: { createdAt: 'desc' }
+      }
+    }
+  });
+
   return (
-    <div className="space-y-8">
-      {/* হেডার সেকশন */}
+    <div className="space-y-8 p-4 md:p-0">
+      {/* Header Section */}
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-black italic tracking-tighter text-slate-900 uppercase">
+        <h1 className="text-4xl font-black italic tracking-tighter text-slate-900 uppercase">
           Employee Workspace
         </h1>
-        <p className="text-slate-500 font-medium italic">
-          স্বাগতম, {session.user.name}! আজকের কাজের আপডেট এখানে দেখুন।
+        <p className="text-slate-500 font-bold italic text-sm">
+          Welcome back, {session.user.name}! Monitor your daily progress and shift logs below.
         </p>
       </div>
 
-      {/* মেইন কার্ড সেকশন */}
+      {/* Main Grid Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* এটেনডেন্স কার্ড */}
-        <div className="lg:col-span-2 bg-blue-600 p-8 rounded-[48px] text-white shadow-xl shadow-blue-200 relative overflow-hidden group">
-          <Clock className="absolute right-[-20px] top-[-20px] text-white/10 group-hover:rotate-12 transition-transform" size={200} />
+        {/* Dynamic Attendance Card */}
+        <div className="lg:col-span-2 bg-blue-600 p-10 rounded-[48px] text-white shadow-xl shadow-blue-200 relative overflow-hidden group">
+          <Clock className="absolute right-[-30px] top-[-30px] text-white/10 group-hover:rotate-12 transition-transform duration-700" size={250} />
           <div className="relative z-10">
-            <h2 className="text-2xl font-bold mb-2">হাজিরা দিন (Attendance)</h2>
-            <p className="text-blue-100 mb-6 font-medium italic">সকাল ৯:০০ - সন্ধ্যা ৬:০০ (অফিস টাইম)</p>
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-1">Shift Registration</h2>
+            <p className="text-blue-100 mb-6 font-bold text-xs uppercase tracking-widest opacity-80">
+              Shift: {userData?.officeStartTime || "09:00 AM"} - 06:00 PM (HQ Standard)
+            </p>
             
-            <div className="flex flex-wrap gap-4">
-              <button className="bg-white text-blue-600 px-8 py-3 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all">
-                CHECK IN
-              </button>
-              <button className="bg-blue-800/40 border border-blue-400 text-white px-8 py-3 rounded-2xl font-black hover:bg-blue-700 transition-all">
-                CHECK OUT
-              </button>
-            </div>
+            {/* Client Component for buttons */}
+            <AttendanceButtons />
           </div>
         </div>
 
-        {/* স্যালারি কার্ড */}
-        <div className="bg-white border-2 border-slate-100 p-8 rounded-[48px] shadow-sm flex flex-col justify-center">
-          <div className="bg-emerald-100 text-emerald-600 p-3 rounded-2xl w-fit mb-4">
-            <Wallet size={24} />
+        {/* Salary Card (Dynamic) */}
+        <div className="bg-white border-2 border-slate-100 p-8 rounded-[48px] shadow-sm flex flex-col justify-center relative overflow-hidden">
+          <div className="bg-emerald-100 text-emerald-600 p-4 rounded-2xl w-fit mb-4">
+            <Wallet size={28} />
           </div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Estimated Salary</p>
-          <h2 className="text-4xl font-black text-slate-900 mt-1 italic">$3,500</h2>
-          <p className="text-emerald-500 text-xs font-bold mt-2">Next Payment: May 1st</p>
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Current Payout</p>
+          <h2 className="text-5xl font-black text-slate-900 mt-2 italic tracking-tighter">
+            ${userData?.salary?.toLocaleString() || "0.00"}
+          </h2>
+          <p className="text-emerald-600 text-xs font-bold mt-4 flex items-center gap-2">
+            <CheckCircle2 size={14}/> Next Disbursement: 1st of next month
+          </p>
         </div>
       </div>
 
-      {/* নিচের সেকশন (টাস্ক এবং নোটিশ) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Tasks & Notices Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* টু-ডু লিস্ট বা টাস্ক */}
-        <div className="bg-white border border-slate-100 p-8 rounded-[40px] shadow-sm">
-          <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-            <CheckCircle2 className="text-blue-600" /> আজকের কাজ (Assigned Tasks)
+        {/* Assigned Tasks (Dynamic) */}
+        <div className="lg:col-span-7 bg-white border border-slate-100 p-8 rounded-[44px] shadow-sm">
+          <h3 className="text-xl font-black text-slate-800 mb-8 flex items-center gap-3 uppercase italic">
+            <Briefcase className="text-blue-600" /> Pending Assignments
           </h3>
           <div className="space-y-4">
-            <TaskItem title="Website UI Bug Fix" priority="High" />
-            <TaskItem title="Client Meeting Preparation" priority="Medium" />
-            <p className="text-slate-400 text-sm italic mt-4 text-center">আর কোনো কাজ বাকি নেই!</p>
+            {userData?.tasksAssigned.length ? userData.tasksAssigned.map((task) => (
+              <TaskItem key={task.id} title={task.title} priority={task.priority} />
+            )) : (
+              <div className="py-10 text-center">
+                <CheckCircle2 className="mx-auto text-slate-200 mb-2" size={40}/>
+                <p className="text-slate-400 text-xs font-black uppercase tracking-widest italic">All targets cleared for today!</p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* জরুরি নোটিশ */}
-        <div className="bg-amber-50 border border-amber-100 p-8 rounded-[40px]">
-          <h3 className="text-lg font-black text-amber-800 mb-4 flex items-center gap-2">
-            <AlertCircle /> অফিস নোটিশ
+        {/* System Notices */}
+        <div className="lg:col-span-5 bg-slate-900 p-10 rounded-[44px] text-white">
+          <h3 className="text-xl font-black mb-6 flex items-center gap-3 uppercase italic">
+            <AlertCircle className="text-amber-400" /> Internal Memo
           </h3>
-          <div className="p-4 bg-white rounded-2xl shadow-sm border border-amber-100">
-            <p className="text-sm font-bold text-slate-700 italic">আগামীকাল ইফতার পার্টি দুপুর ৩টা থেকে শুরু হবে। সবাইকে উপস্থিত থাকার অনুরোধ রইল।</p>
-            <p className="text-[10px] text-slate-400 mt-2">— Admin Team</p>
+          <div className="p-6 bg-white/5 backdrop-blur-md rounded-[32px] border border-white/10">
+            <p className="text-sm font-bold text-slate-200 italic leading-relaxed">
+              "Please ensure all weekly reports are submitted through the portal before EOD Friday. Performance bonuses will be calculated based on EOD logs."
+            </p>
+            <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">— Admin Desk</span>
+              <span className="text-[9px] text-slate-500 font-bold italic">Ref: HQ-402</span>
+            </div>
           </div>
         </div>
 
@@ -86,13 +111,12 @@ export default async function EmployeePanel() {
   );
 }
 
-// ছোট টাস্ক কম্পোনেন্ট
 function TaskItem({ title, priority }: { title: string, priority: string }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-colors">
-      <span className="font-bold text-slate-700 italic text-sm">{title}</span>
-      <span className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase ${
-        priority === 'High' ? 'bg-rose-100 text-rose-600' : 'bg-blue-100 text-blue-600'
+    <div className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all hover:bg-white">
+      <span className="font-black text-slate-700 italic text-sm">{title}</span>
+      <span className={`text-[10px] font-black px-4 py-1.5 rounded-xl uppercase tracking-tighter shadow-sm ${
+        priority === 'High' ? 'bg-rose-600 text-white' : 'bg-blue-600 text-white'
       }`}>
         {priority}
       </span>

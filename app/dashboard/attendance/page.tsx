@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 
 export default function EmployeeDashboard() {
   const [stats, setStats] = useState({
-    total: 30, // Monthly Total Days
+    total: 30, 
     present: 0,
     absent: 0,
     leave: 0,
@@ -18,21 +18,28 @@ export default function EmployeeDashboard() {
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
 
-  // Sync personal attendance logs and monthly summary
+  // Sync attendance logs and stats
   const syncAttendanceData = async () => {
     try {
-      const response = await fetch("/api/attendance"); // GET method returns history
+      const response = await fetch("/api/attendance");
       const data = await response.json();
+      
       if (response.ok) {
         setAttendanceHistory(data);
         
-        // Calculate dynamic stats from the history logs
+        // Calculate dynamic stats from logs
         const lateCount = data.filter((item: any) => item.status === "LATE").length;
         const presentCount = data.length;
-        setStats(prev => ({ ...prev, present: presentCount, late: lateCount }));
+        
+        setStats(prev => ({ 
+          ...prev, 
+          present: presentCount, 
+          late: lateCount 
+        }));
       }
     } catch (error) {
       console.error("Critical Sync Error: Unable to fetch logs");
+      toast.error("Failed to load attendance logs");
     } finally {
       setIsRefreshing(false);
     }
@@ -42,9 +49,11 @@ export default function EmployeeDashboard() {
     syncAttendanceData();
   }, []);
 
-  // Dispatch attendance registration (Check In/Out)
+  // Process Check In/Out
   const processAttendanceRequest = async (type: "IN" | "OUT") => {
     setLoading(true);
+    
+    // Time Format fix for Backend (e.g., 09:30 AM)
     const timestamp = new Date().toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit', 
@@ -58,12 +67,13 @@ export default function EmployeeDashboard() {
         body: JSON.stringify({ type, time: timestamp }),
       });
 
+      const payload = await res.json();
+
       if (res.ok) {
-        toast.success(`Operational ${type === 'IN' ? 'Check-in' : 'Check-out'} confirmed`);
-        syncAttendanceData(); // Refresh logs to show the new entry immediately
+        toast.success(`Confirmed: ${type === 'IN' ? 'Checked In' : 'Checked Out'}`);
+        await syncAttendanceData(); // Refresh history immediately
       } else {
-        const errorPayload = await res.json();
-        toast.error(errorPayload.message || "Request Rejected");
+        toast.error(payload.message || "Action Rejected");
       }
     } catch (error) {
       toast.error("Network communication failure");
@@ -86,23 +96,23 @@ export default function EmployeeDashboard() {
         <div>
           <h2 className="text-3xl font-black italic text-slate-900 tracking-tighter uppercase">Shift Manifest</h2>
           <p className="text-[10px] text-blue-600 font-bold uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-            <Navigation size={12}/> Authorized Location: Dhaka HQ
+            <Navigation size={12}/> Operational Zone: Dhaka HQ
           </p>
         </div>
         <div className="flex gap-4">
           <button 
             onClick={() => processAttendanceRequest("IN")}
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-blue-100 active:scale-95 disabled:opacity-30"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 md:px-10 py-4 md:py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-blue-100 active:scale-95 disabled:opacity-50"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={18} />} CLOCK IN
           </button>
           <button 
             onClick={() => processAttendanceRequest("OUT")}
             disabled={loading}
-            className="bg-slate-900 hover:bg-black text-white px-10 py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-slate-100 active:scale-95 disabled:opacity-30"
+            className="bg-slate-900 hover:bg-black text-white px-8 md:px-10 py-4 md:py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-slate-100 active:scale-95 disabled:opacity-50"
           >
-            <Clock size={18} /> CLOCK OUT
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <Clock size={18} />} CLOCK OUT
           </button>
         </div>
       </div>
@@ -117,7 +127,7 @@ export default function EmployeeDashboard() {
              <svg className="w-full h-full transform -rotate-90">
               <circle cx="88" cy="88" r="75" stroke="#F1F5F9" strokeWidth="15" fill="transparent" />
               <circle cx="88" cy="88" r="75" stroke="#3B82F6" strokeWidth="15" fill="transparent" 
-                strokeDasharray="471" strokeDashoffset={`${471 - (stats.present / 30) * 471}`} strokeLinecap="round" />
+                strokeDasharray="471" strokeDashoffset={`${471 - (Math.min(stats.present, 30) / 30) * 471}`} strokeLinecap="round" />
             </svg>
             <div className="absolute text-center">
               <span className="text-4xl font-black block text-slate-900 tracking-tighter">{stats.present}</span>
@@ -134,11 +144,11 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* History Log Table (Calendar View Substitute) */}
+      {/* History Log Table */}
       <div className="bg-white rounded-[44px] border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center">
            <h3 className="text-xl font-black italic uppercase tracking-tighter">Personal Attendance Log</h3>
-           <span className="text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full uppercase">Year: 2026</span>
+           <span className="text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full uppercase">April 2026</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -179,7 +189,6 @@ export default function EmployeeDashboard() {
   );
 }
 
-// Reusable Small Component for Analytics
 function StatCard({ icon, label, value, color, bg }: any) {
   return (
     <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center text-center hover:shadow-lg hover:shadow-slate-100 transition-all">

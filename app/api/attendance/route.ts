@@ -6,83 +6,63 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user) {
-      return new NextResponse("Unauthorized Access", { status: 401 });
-    }
+    if (!session?.user) return new NextResponse("Unauthorized", { status: 401 });
 
     const { type, time } = await req.json(); 
     const userId = (session.user as any).id;
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // --- FIX: Safely fetch user profile ---
-    const profile = await db.user.findUnique({
-      where: { id: userId },
-    });
+    // ফিক্স: ডাটাবেসে officeStartTime কলাম নেই, তাই সরাসরি ডিফল্ট টাইম ধরছি
+    const shiftStart = "09:00 AM"; 
 
-    // Fallback logic if officeStartTime is missing in DB
-    const shiftStartConfig = (profile as any)?.officeStartTime || "09:00 AM";
-
-    // Lookup today's entry
+    // আজকের এন্ট্রি চেক
     const existingEntry = await db.attendance.findFirst({
-      where: { 
-        userId: userId, 
-        date: { gte: today } 
-      }
+      where: { userId, date: { gte: today } }
     });
 
-    // --- Clock-In Logic ---
     if (type === "IN") {
-      if (existingEntry) {
-        return NextResponse.json({ message: "Already checked in for today" }, { status: 400 });
-      }
+      if (existingEntry) return NextResponse.json({ message: "Already checked in" }, { status: 400 });
 
-      let attendanceStatus = "PRESENT";
-      let delayDuration = 0;
+      let status = "PRESENT";
+      let delay = 0;
 
-      const referenceTime = new Date(`2026-01-01 ${shiftStartConfig}`);
+      // সময় তুলনা (Late ক্যালকুলেশন)
+      const refTime = new Date(`2026-01-01 ${shiftStart}`);
       const actualTime = new Date(`2026-01-01 ${time}`);
 
-      if (actualTime > referenceTime) {
-        attendanceStatus = "LATE";
-        delayDuration = Math.round((actualTime.getTime() - referenceTime.getTime()) / 60000);
+      if (actualTime > refTime) {
+        status = "LATE";
+        delay = Math.round((actualTime.getTime() - refTime.getTime()) / 60000);
       }
 
-      const attendanceRecord = await db.attendance.create({
+      const newRecord = await db.attendance.create({
         data: { 
           userId, 
           checkIn: time, 
-          status: attendanceStatus,
-          lateMinutes: delayDuration,
-          date: new Date()
+          status, 
+          lateMinutes: delay, 
+          date: new Date() 
         }
       });
-
-      return NextResponse.json(attendanceRecord);
+      return NextResponse.json(newRecord);
     }
 
-    // --- Clock-Out Logic (Fixing the null issue) ---
     if (type === "OUT") {
-      if (!existingEntry) {
-        return NextResponse.json({ message: "No active check-in record found" }, { status: 400 });
-      }
+      if (!existingEntry) return NextResponse.json({ message: "No check-in found" }, { status: 400 });
+      if (existingEntry.checkOut) return NextResponse.json({ message: "Already checked out" }, { status: 400 });
       
-      // Update the existing record's checkOut field
-      const updatedLog = await db.attendance.update({
+      const updated = await db.attendance.update({
         where: { id: existingEntry.id },
         data: { checkOut: time }
       });
-
-      return NextResponse.json(updatedLog);
+      return NextResponse.json(updated);
     }
 
-    return new NextResponse("Invalid Request", { status: 400 });
-
+    return new NextResponse("Invalid request", { status: 400 });
   } catch (error: any) {
     console.error("[ATTENDANCE_POST_ERROR]:", error.message);
-    return new NextResponse("Sync Error: Please ensure DB schema is correct", { status: 500 });
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -91,28 +71,21 @@ export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session?.user) return new NextResponse("Unauthorized", { status: 401 });
 
-    const userRole = (session.user as any).role;
-    const userId = (session.user as any).id;
+    const user = session.user as any;
+    const queryFilter = (user.role === "HR" || user.role === "ADMIN") ? {} : { userId: user.id };
 
-    const filter = (userRole === "HR" || userRole === "ADMIN") ? {} : { userId };
-
-    const historyLogs = await db.attendance.findMany({
-      where: filter,
+    const logs = await db.attendance.findMany({
+      where: queryFilter,
       include: {
-        user: {
-          select: { 
-            name: true, 
-            email: true, 
-            designation: true, 
-            department: true 
-          }
+        user: { 
+          select: { name: true, designation: true } 
         }
       },
       orderBy: { date: 'desc' }
     });
 
-    return NextResponse.json(historyLogs);
+    return NextResponse.json(logs);
   } catch (error: any) {
-    return new NextResponse("Failed to fetch logs", { status: 500 });
+    return NextResponse.json({ message: "Fetch failed" }, { status: 500 });
   }
 }

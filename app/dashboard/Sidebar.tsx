@@ -28,6 +28,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
       icon: ListChecks, 
       roles: ['LEADER', 'ADMIN'] 
     },
+    
     // --- EMPLOYEE (The ones you asked for) ---
     { 
       name: 'Dashboard', 
@@ -43,7 +44,7 @@ export default function Sidebar({ userRole }: { userRole: string }) {
     },
     { 
       name: 'Attendance', 
-      path: '/dashboard/employee/attendance', 
+      path: '/dashboard/attendance', 
       icon: Clock, 
       roles: ['EMPLOYEE', 'ADMIN', 'HR', 'LEADER'] 
     },
