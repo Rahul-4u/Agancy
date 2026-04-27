@@ -1,15 +1,12 @@
 "use server";
 
 import { signIn } from "@/auth";
-// @ts-ignore
-import { AuthError } from "next-auth";
 
 export async function loginUser(prevState: any, formData: FormData) {
   const email = formData.get("email");
   const password = formData.get("password");
 
   try {
-    // এখানে 'await' এবং 'redirect: true' নিশ্চিত করো
     await signIn("credentials", {
       email,
       password,
@@ -17,18 +14,18 @@ export async function loginUser(prevState: any, formData: FormData) {
     });
     
     return { success: "Logged in!" };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "Invalid credentials!" };
-        default:
-          return { error: "Something went wrong!" };
-      }
+  } catch (error: any) {
+    // Next.js এর রিডাইরেক্ট এরর হ্যান্ডেল করা (যাতে লগইন কাজ করে)
+    if (error?.message?.includes("NEXT_REDIRECT")) {
+      throw error;
     }
 
-    // খুবই জরুরি: নেক্সট জেএস রিডাইরেক্ট করার জন্য এরর থ্রো করে। 
-    // এটা না থাকলে ইউজার লগইন পেজেই আটকে থাকবে।
-    throw error; 
+    // ভুল পাসওয়ার্ড বা ইমেইলের জন্য এরর মেসেজ
+    if (error?.type === "CredentialsSignin" || error?.code === "credentials") {
+      return { error: "Invalid credentials!" };
+    }
+
+    // অন্য যেকোনো এররের জন্য
+    return { error: "Something went wrong! Please try again." };
   }
 }
