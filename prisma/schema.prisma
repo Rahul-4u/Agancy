@@ -64,15 +64,17 @@ model User {
 }
 
 // ৩. অ্যাটেনডেন্স (Attendance)
+
 model Attendance {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  date      DateTime @default(now())
-  checkIn   String?
-  checkOut  String?
-  status    String   @default("PRESENT") // PRESENT, LATE, ABSENT
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  date         DateTime @default(now())
+  checkIn      String?
+  checkOut     String?
+  status       String   @default("PRESENT") // Options: PRESENT, LATE, ABSENT, HOLIDAY
+  lateMinutes  Int      @default(0)         // Stores delay in minutes
+  createdAt    DateTime @default(now())
 }
 
 // ৪. টাস্ক ম্যানেজমেন্ট (Task)
