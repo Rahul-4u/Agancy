@@ -33,26 +33,26 @@ export const authOptions: AuthOptions = {
           throw new Error("Wrong password");
         }
 
-        // লগইনের সময় প্রাথমিক ডাটা রিটার্ন
+        // রিটার্ন করার সময় টাইপ এরর এড়াতে as any ব্যবহার করা হয়েছে
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
-        };
+        } as any;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // ১. লগইন করার সময় টোকেনে ডাটা রাখা
+      // ১. লগইন করার সময় টোকেনে ডাটা রাখা
       if (user) {
         token.id = user.id;
+        // @ts-ignore
         token.role = user.role;
       }
 
-      // ২. অটো-রিফ্রেশ লজিক: প্রতিবার ডাটাবেস থেকে লেটেস্ট রোল চেক করবে
-      // এটি করার ফলে সুপাবেজে রোল চেঞ্জ করলে এখানে অটো আপডেট হবে
+      // ২. অটো-রিফ্রেশ লজিক
       if (token?.email) {
         const dbUser = await db.user.findUnique({
           where: { email: token.email },
@@ -60,13 +60,15 @@ export const authOptions: AuthOptions = {
         });
         
         if (dbUser) {
+          // @ts-ignore
           token.role = dbUser.role;
           token.id = dbUser.id;
         }
       }
 
-      // ৩. যদি ক্লায়েন্ট সাইড থেকে update() কল করা হয়
+      // ৩. ক্লায়েন্ট সাইড আপডেট
       if (trigger === "update" && session?.role) {
+        // @ts-ignore
         token.role = session.role;
       }
 
@@ -84,7 +86,7 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // ৩০ দিন সেশন থাকবে
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // আপনার প্রিজমা ক্লায়েন্ট পাথ ঠিক করে নিন
+import { db } from "@/lib/db"; // কনসিস্টেন্সির জন্য 'db' ব্যবহার করুন
 
 export async function GET() {
   try {
-    // ডাটাবেস থেকে শুধু EMPLOYEE রোল থাকা ইউজারদের নিয়ে আসা
-    const users = await prisma.user.findMany({
+    // ডাটাবেস থেকে শুধু EMPLOYEE রোল থাকা ইউজারদের নিয়ে আসা
+    const users = await db.user.findMany({
       where: {
         role: "EMPLOYEE",
       },
@@ -17,8 +17,12 @@ export async function GET() {
     });
 
     return NextResponse.json(users);
-  } catch (error) {
-    console.error("Fetch Users Error:", error);
-    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
+  } catch (error: any) {
+    // error: any দেওয়া হয়েছে যাতে Vercel টাইপ চেক এরর না দেয়
+    console.error("Fetch Users Error:", error.message);
+    return NextResponse.json(
+      { error: "Failed to fetch users" }, 
+      { status: 500 }
+    );
   }
 }
