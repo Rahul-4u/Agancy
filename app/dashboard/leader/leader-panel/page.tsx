@@ -1,16 +1,38 @@
 "use client";
+
 import { useState } from "react";
 import { 
   Plus, Users, FolderKanban, AlertCircle, 
   CheckCircle2, Send, LayoutGrid, Clock 
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+
+/**
+ * Interface for the stats card data
+ */
+interface StatItem {
+  label: string;
+  value: string;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+}
+
+/**
+ * Interface for project row properties
+ */
+interface ProjectRowProps {
+  name: string;
+  member: string;
+  status: "WIP" | "ISSUE" | "DELIVERY";
+  time: string;
+}
 
 export default function LeaderPanel() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ডেমো স্ট্যাটাস (ডাটাবেস থেকে আসবে)
-  const stats = [
+  // Stats data (In a real app, this would be fetched from your API/DB)
+  const stats: StatItem[] = [
     { label: "Active Projects", value: "12", icon: FolderKanban, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Team Members", value: "08", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
     { label: "Pending Issues", value: "03", icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-50" },
@@ -22,8 +44,12 @@ export default function LeaderPanel() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black italic tracking-tighter text-slate-900 uppercase">Team Leader Hub</h1>
-          <p className="text-slate-500 font-bold italic text-sm">Manage your team and assign new tasks</p>
+          <h1 className="text-3xl font-black italic tracking-tighter text-slate-900 uppercase leading-none">
+            Team Leader Hub
+          </h1>
+          <p className="text-slate-500 font-bold italic text-sm mt-1">
+            Manage your team and assign new tasks
+          </p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -48,13 +74,15 @@ export default function LeaderPanel() {
         ))}
       </div>
 
-      {/* Main Content: Project List for Leader */}
+      {/* Main Content: Project Monitoring List */}
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
           <h3 className="font-black italic text-slate-800 flex items-center gap-2 uppercase tracking-tight">
             <LayoutGrid size={20} className="text-blue-600" /> Current Team Projects
           </h3>
-          <span className="text-[10px] font-black bg-white px-3 py-1 rounded-full border shadow-sm">LIVE MONITORING</span>
+          <span className="text-[10px] font-black bg-white px-3 py-1 rounded-full border shadow-sm uppercase tracking-widest">
+            Live Monitoring
+          </span>
         </div>
         
         <div className="overflow-x-auto">
@@ -80,9 +108,11 @@ export default function LeaderPanel() {
   );
 }
 
-// Table Row Component
-function ProjectRow({ name, member, status, time }: any) {
-  const statusColors: any = {
+/**
+ * Reusable Table Row Component for Project Monitoring
+ */
+function ProjectRow({ name, member, status, time }: ProjectRowProps) {
+  const statusColors: Record<string, string> = {
     WIP: "bg-blue-100 text-blue-600",
     ISSUE: "bg-rose-100 text-rose-600",
     DELIVERY: "bg-emerald-100 text-emerald-600",

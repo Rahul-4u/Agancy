@@ -1,33 +1,46 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { Search, CheckCircle, Mail, Plus, X, Loader2, Database } from "lucide-react";
+import { Search, CheckCircle, Plus, X, Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+
+// Defining Interfaces for Type Safety
+interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface ProjectRow {
+  id: string;
+  orderId: string;
+  service: string;
+}
 
 export default function LeaderAllProjects() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProject, setSelectedProject] = useState<any>(null);
-  const [selectedEmp, setSelectedEmp] = useState<any>(null);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [selectedProject, setSelectedProject] = useState<ProjectRow | null>(null);
+  const [selectedEmp, setSelectedEmp] = useState<Employee | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [showModal, setShowModal] = useState(false);
-
-  // রেজিস্ট্রেশন ফর্মের জন্য নতুন স্টেট
   const [regData, setRegData] = useState({ name: "", email: "" });
 
-  // ১. ডাটাবেস থেকে সব Employee লোড করা
+  // 1. Fetch all members from Database
   const loadEmployees = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/users"); 
+      const res = await fetch("/api/users");
       const data = await res.json();
-      
-      // শুধুমাত্র যাদের রোল EMPLOYEE তাদের ফিল্টার করা
-      const onlyEmployees = Array.isArray(data) 
-        ? data.filter((user: any) => user.role === "EMPLOYEE") 
+
+      // Filtering only those with the EMPLOYEE role
+      const onlyEmployees = Array.isArray(data)
+        ? data.filter((user: Employee) => user.role === "EMPLOYEE")
         : [];
-      setEmployees(onlyEmployees); 
+      setEmployees(onlyEmployees);
     } catch (err) {
-      toast.error("ডাটাবেস থেকে মেম্বার লোড করা যায়নি");
+      toast.error("Failed to load members from database");
     } finally {
       setLoading(false);
     }
@@ -37,12 +50,12 @@ export default function LeaderAllProjects() {
     loadEmployees();
   }, []);
 
-  // ২. নতুন মেম্বার রেজিস্ট্রেশন লজিক (Fixing the 404/Functionality)
+  // 2. Logic for adding a new member
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regData.name || !regData.email) return toast.error("সবগুলো ঘর পূরণ করুন");
+    if (!regData.name || !regData.email) return toast.error("Please fill all fields");
 
-    const loadingToast = toast.loading("মেম্বার অ্যাড হচ্ছে...");
+    const loadingToast = toast.loading("Adding new member...");
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -50,30 +63,30 @@ export default function LeaderAllProjects() {
         body: JSON.stringify({
           name: regData.name,
           email: regData.email,
-          password: "password123", // ডিফল্ট পাসওয়ার্ড
-          role: "EMPLOYEE"
+          password: "password123", // Default secure password
+          role: "EMPLOYEE",
         }),
       });
 
       if (res.ok) {
-        toast.success("নতুন মেম্বার সফলভাবে অ্যাড হয়েছে", { id: loadingToast });
+        toast.success("Member added successfully", { id: loadingToast });
         setShowModal(false);
-        setRegData({ name: "", email: "" });
-        loadEmployees(); // লিস্ট রিফ্রেশ করা
+        setRegData({ name: "" , email: "" });
+        loadEmployees(); // Refreshing the list
       } else {
         const error = await res.json();
-        throw new Error(error.message || "Failed");
+        throw new Error(error.message || "Failed to register");
       }
     } catch (err: any) {
-      toast.error(err.message || "রেজিস্ট্রেশন করা যায়নি", { id: loadingToast });
+      toast.error(err.message || "Registration failed", { id: loadingToast });
     }
   };
 
-  // ৩. প্রজেক্ট অ্যাসাইন লজিক
+  // 3. Logic for assigning project to a member
   const handleAssign = async () => {
-    if (!selectedProject || !selectedEmp) return toast.error("প্রজেক্ট এবং মেম্বার সিলেক্ট করুন");
+    if (!selectedProject || !selectedEmp) return toast.error("Select both project and member");
 
-    const loadingToast = toast.loading("অ্যাসাইন হচ্ছে...");
+    const loadingToast = toast.loading("Assigning project...");
     try {
       const res = await fetch("/api/projects", {
         method: "PATCH",
@@ -87,20 +100,20 @@ export default function LeaderAllProjects() {
       });
 
       if (res.ok) {
-        toast.success(`অ্যাসাইন হয়েছে: ${selectedEmp.name}`, { id: loadingToast });
+        toast.success(`Assigned to: ${selectedEmp.name}`, { id: loadingToast });
         setSelectedProject(null);
         setSelectedEmp(null);
       } else {
-        throw new Error("Failed");
+        throw new Error("Assignment failed");
       }
     } catch (err) {
-      toast.error("অ্যাসাইন করা সম্ভব হয়নি", { id: loadingToast });
+      toast.error("Process failed", { id: loadingToast });
     }
   };
 
-  // ৪. সার্চ ফিল্টারিং
-  const filteredEmployees = employees.filter(emp => 
-    emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  // 4. Filtering logic for search
+  const filteredEmployees = employees.filter((emp) =>
+    emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -108,7 +121,7 @@ export default function LeaderAllProjects() {
     <div className="p-4 md:p-10 space-y-8 bg-[#F8F9FB] min-h-screen font-sans italic">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* বাম পাশ: প্রজেক্ট টেবিল */}
+        {/* Left Side: Project Selection Table */}
         <div className="lg:col-span-7 bg-white rounded-[35px] md:rounded-[44px] shadow-sm border border-slate-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -144,7 +157,7 @@ export default function LeaderAllProjects() {
           </div>
         </div>
 
-        {/* ডান পাশ: মেম্বার প্যানেল */}
+        {/* Right Side: Assignment Panel */}
         <div className="lg:col-span-5">
           <div className="bg-[#0B0F19] rounded-[35px] md:rounded-[44px] p-6 md:p-10 text-white shadow-2xl flex flex-col min-h-[550px] relative overflow-hidden">
             <div className="relative z-10 h-full flex flex-col">
@@ -155,7 +168,7 @@ export default function LeaderAllProjects() {
                 </button>
               </div>
 
-              {/* সার্চ ইনপুট */}
+              {/* Search Implementation */}
               <div className="relative mb-6">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input 
@@ -167,7 +180,7 @@ export default function LeaderAllProjects() {
                 />
               </div>
 
-              {/* মেম্বার লিস্ট */}
+              {/* Member List with Scrollbar */}
               <div className="flex-1 space-y-3 overflow-y-auto max-h-[280px] mb-8 pr-2 custom-scrollbar">
                 {loading ? (
                   <div className="flex flex-col items-center py-10 gap-2">
@@ -213,7 +226,7 @@ export default function LeaderAllProjects() {
         </div>
       </div>
 
-      {/* register modal */}
+      {/* Registration Modal */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
           <div className="bg-white rounded-[40px] p-10 w-full max-w-md relative shadow-2xl border border-white/20">

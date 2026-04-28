@@ -1,56 +1,56 @@
 "use client";
+
 import React, { useEffect, useRef } from 'react';
-import { Mail, Phone, MapPin, User, MailIcon, PhoneCall, ChevronDown, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, User, MailIcon, PhoneCall, ChevronDown, Send, ArrowRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// GSAP Plugin Register
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 const ContactSection = () => {
-  const sectionRef = useRef(null);
-  const imageRef = useRef(null);
-  const formRef = useRef(null);
-  const infoCardsRef = useRef([]);
+  const sectionRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const infoCardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // ইমেজ অ্যানিমেশন (বাম থেকে ডানে)
+      // Image Slide-in
       gsap.from(imageRef.current, {
         x: -100,
         opacity: 0,
-        duration: 1.2,
-        ease: "power3.out",
+        duration: 1.5,
+        ease: "expo.out",
         scrollTrigger: {
           trigger: imageRef.current,
           start: "top 80%",
         }
       });
 
-      // ফর্ম অ্যানিমেশন (নিচ থেকে উপরে)
+      // Form Lift-up
       gsap.from(formRef.current, {
-        y: 80,
+        y: 100,
         opacity: 0,
-        duration: 1,
-        ease: "power2.out",
+        duration: 1.2,
+        ease: "power4.out",
         scrollTrigger: {
           trigger: formRef.current,
           start: "top 85%",
         }
       });
 
-      // কন্টাক্ট কার্ডগুলোর স্ট্যাগার অ্যানিমেশন
+      // Staggered Info Cards
       gsap.from(infoCardsRef.current, {
-        x: -50,
+        y: 30,
         opacity: 0,
         duration: 0.8,
-        stagger: 0.2,
+        stagger: 0.15,
         ease: "back.out(1.7)",
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top 70%",
+          start: "top 75%",
         }
       });
     }, sectionRef);
@@ -62,107 +62,108 @@ const ContactSection = () => {
     <section 
       ref={sectionRef} 
       id="contact" 
-      /* মেইন ব্যাকগ্রাউন্ড গ্রেডিয়েন্ট এবং ডার্ক থিম */
-      className="bg-[#030712] bg-gradient-to-br from-[#030712] via-[#0b1229] to-[#030712] py-16 lg:py-28 relative overflow-hidden"
+      className="bg-[#030712] py-24 lg:py-40 relative overflow-hidden"
     >
-      {/* ব্যাকগ্রাউন্ড ডেকোরেশন গ্লো */}
+      {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-24 -right-24 w-[600px] h-[600px] bg-[#ff4b81]/5 blur-[150px] rounded-full" />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full" />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-12 lg:gap-20">
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-16 lg:gap-24">
           
-          {/* বাম পাশ: ইমেজ এবং ইনফো সেকশন */}
+          {/* Left Side: Visuals & Info */}
           <div ref={imageRef} className="w-full lg:w-5/12 flex flex-col items-center lg:items-start">
-            <div className="relative mb-12 w-full max-w-[420px]">
-              {/* মেইন ইমেজ উইথ বর্ডার ডিজাইন */}
-              <div className="relative z-10 rounded-tr-[100px] rounded-bl-[100px] overflow-hidden border-2 border-white/10 shadow-2xl aspect-[4/5] bg-[#0a1229]">
+            <div className="relative mb-16 w-full max-w-[450px]">
+              {/* Geometric Image Frame */}
+              <div className="relative z-10 rounded-[60px] overflow-hidden border border-white/10 shadow-2xl aspect-[4/5] group">
                 <img 
-                  src="/images/women.png" // আপনার পাবলিক ফোল্ডারে এই ইমেজটি থাকতে হবে
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964" 
                   alt="Customer Support" 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000 ease-in-out scale-105 hover:scale-100"
+                  className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-transparent transition-all" />
               </div>
-              {/* আউটলাইন বর্ডার */}
-              <div className="absolute -bottom-5 -left-5 w-full h-full border-2 border-[#3065eb] rounded-tr-[100px] rounded-bl-[100px] -z-0 opacity-50" />
+              {/* Tech Outline */}
+              <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-blue-500/30 rounded-[60px] -z-0" />
             </div>
 
-            {/* কন্টাক্ট ইনফো কার্ডস */}
-            <div className="space-y-4 w-full max-w-[420px]">
+            {/* Info Cards Grid */}
+            <div className="grid grid-cols-1 gap-4 w-full max-w-[450px]">
               {[
-                { icon: <Mail size={20} />, label: "Email Us", val: "info@domain.com", color: "bg-blue-500" },
-                { icon: <Phone size={20} />, label: "Contact US", val: "99 (00) 567 780", color: "bg-blue-600" },
-                { icon: <MapPin size={20} />, label: "Our Address", val: "1629 N. Dixie Avenue, Kentucky", color: "bg-blue-700" }
+                { icon: <Mail size={20} />, label: "Email Hub", val: "SUPPORT@REBACK.COM", color: "bg-blue-600" },
+                { icon: <Phone size={20} />, label: "Hotline", val: "+1 (888) REBACK-IT", color: "bg-blue-700" },
+                { icon: <MapPin size={20} />, label: "Headquarters", val: "101 Tech Plaza, Silicon Valley", color: "bg-blue-800" }
               ].map((item, index) => (
                 <div 
                   key={index} 
-                  ref={el => infoCardsRef.current[index] = el}
-                  className="flex items-center gap-5 p-5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/5 hover:border-[#3065eb]/40 transition-all group cursor-pointer"
+                  ref={el => { infoCardsRef.current[index] = el }}
+                  className="flex items-center gap-6 p-6 bg-white/5 backdrop-blur-xl rounded-[28px] border border-white/5 hover:border-blue-500/40 transition-all group cursor-pointer"
                 >
-                  <div className={`shrink-0 w-12 h-12 rounded-xl ${item.color} flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform`}>
+                  <div className={`shrink-0 w-14 h-14 rounded-2xl ${item.color} flex items-center justify-center text-white shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all`}>
                     {item.icon}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[#3065eb] text-[10px] font-bold uppercase tracking-[2px] mb-1">{item.label}</p>
-                    <p className="text-white font-bold text-sm sm:text-base truncate">{item.val}</p>
+                    <p className="text-blue-500 text-[9px] font-black italic uppercase tracking-[0.3em] mb-1">{item.label}</p>
+                    <p className="text-white font-black italic uppercase text-sm sm:text-base tracking-tight">{item.val}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ডান পাশ: কন্টাক্ট ফর্ম */}
+          {/* Right Side: High-Conversion Form */}
           <div ref={formRef} className="w-full lg:w-7/12">
-            <div className="bg-gradient-to-b from-[#0a1229]/90 to-[#030712]/95 backdrop-blur-2xl p-8 sm:p-12 rounded-[40px] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-              <div className="mb-10 text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                  <span className="w-8 h-[2px] bg-[#3065eb]"></span>
-                  <span className="text-[#3065eb] font-bold uppercase tracking-[4px] text-[11px]">Get In Touch</span>
+            <div className="bg-[#0a1229]/40 backdrop-blur-3xl p-8 sm:p-16 rounded-[64px] border border-white/10 shadow-2xl">
+              <div className="mb-12 text-center lg:text-left space-y-4">
+                <div className="flex items-center justify-center lg:justify-start gap-3">
+                  <div className="w-12 h-[2px] bg-blue-500"></div>
+                  <span className="text-blue-500 font-black italic uppercase tracking-[0.4em] text-[10px]">Contact Us</span>
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-black text-white mb-5 leading-tight">
-                  Conversation – <span className="text-[#ffd600]">Reach Out</span> <br className="hidden sm:block" /> Anytime
+                <h2 className="text-4xl sm:text-6xl font-black text-white italic uppercase tracking-tighter leading-[0.95]">
+                  Start The <span className="text-[#ffd600]">Conversation</span> – <br />
+                  Reach Out <span className="text-blue-500">Now</span>
                 </h2>
-                <p className="text-gray-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
-                  We’re here to listen! Whether you have questions, feedback, or just want to say hello, feel free to reach out.
+                <p className="text-slate-400 font-medium italic leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Ready to deploy next-gen solutions? Our team is standing by to architect your business transformation.
                 </p>
               </div>
 
-              <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="relative group">
-                    <input type="text" placeholder="Full Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#3065eb] focus:bg-white/10 transition-all placeholder:text-gray-600" />
-                    <User className="absolute right-6 top-4 text-gray-600 group-focus-within:text-[#3065eb] transition-colors" size={18} />
+              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="relative">
+                    <input type="text" placeholder="IDENTITY / FULL NAME" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white text-[11px] font-black italic tracking-widest outline-none focus:border-blue-500 focus:bg-white/10 transition-all placeholder:text-slate-600" />
+                    <User className="absolute right-8 top-5 text-slate-700" size={18} />
                   </div>
-                  <div className="relative group">
-                    <input type="email" placeholder="Email Address" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#3065eb] focus:bg-white/10 transition-all placeholder:text-gray-600" />
-                    <MailIcon className="absolute right-6 top-4 text-gray-600 group-focus-within:text-[#3065eb] transition-colors" size={18} />
+                  <div className="relative">
+                    <input type="email" placeholder="COMMUNICATION / EMAIL" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white text-[11px] font-black italic tracking-widest outline-none focus:border-blue-500 focus:bg-white/10 transition-all placeholder:text-slate-600" />
+                    <MailIcon className="absolute right-8 top-5 text-slate-700" size={18} />
                   </div>
-                  <div className="relative group">
-                    <input type="text" placeholder="Phone Number" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#3065eb] focus:bg-white/10 transition-all placeholder:text-gray-600" />
-                    <PhoneCall className="absolute right-6 top-4 text-gray-600 group-focus-within:text-[#3065eb] transition-colors" size={18} />
+                  <div className="relative">
+                    <input type="text" placeholder="DIRECT LINE / PHONE" className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white text-[11px] font-black italic tracking-widest outline-none focus:border-blue-500 focus:bg-white/10 transition-all placeholder:text-slate-600" />
+                    <PhoneCall className="absolute right-8 top-5 text-slate-700" size={18} />
                   </div>
-                  <div className="relative group">
-                    <select className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-sm outline-none focus:border-[#3065eb] focus:bg-white/10 transition-all appearance-none cursor-pointer">
-                      <option className="bg-[#0a1229]">Subject</option>
-                      <option className="bg-[#0a1229]">Web Development</option>
-                      <option className="bg-[#0a1229]">Digital Marketing</option>
+                  <div className="relative">
+                    <select className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-white text-[11px] font-black italic tracking-widest outline-none focus:border-blue-500 focus:bg-white/10 transition-all appearance-none cursor-pointer">
+                      <option className="bg-[#0a1229]">SELECT SERVICE</option>
+                      <option className="bg-[#0a1229]">ENTERPRISE CLOUD</option>
+                      <option className="bg-[#0a1229]">AI INTEGRATION</option>
+                      <option className="bg-[#0a1229]">CYBER SECURITY</option>
                     </select>
-                    <ChevronDown className="absolute right-6 top-4 text-gray-600 pointer-events-none" size={18} />
+                    <ChevronDown className="absolute right-8 top-5 text-slate-700 pointer-events-none" size={18} />
                   </div>
                 </div>
 
-                <div className="relative group">
-                  <textarea rows={5} placeholder="Write your message" className="w-full bg-white/5 border border-white/10 rounded-[30px] py-4 px-6 text-white text-sm outline-none focus:border-[#3065eb] focus:bg-white/10 transition-all placeholder:text-gray-600 resize-none"></textarea>
-                  <Send className="absolute right-6 top-5 text-gray-600 group-focus-within:text-[#3065eb] transition-colors" size={18} />
+                <div className="relative">
+                  <textarea rows={5} placeholder="BRIEF YOUR PROJECT REQUIREMENTS" className="w-full bg-white/5 border border-white/10 rounded-[32px] py-6 px-8 text-white text-[11px] font-black italic tracking-widest outline-none focus:border-blue-500 focus:bg-white/10 transition-all placeholder:text-slate-600 resize-none"></textarea>
+                  <Send className="absolute right-8 top-6 text-slate-700" size={18} />
                 </div>
 
-                {/* সাবমিট বাটন উইথ গ্রেডিয়েন্ট */}
-                <div className="pt-2">
-                  <button className="group relative px-12 py-4 rounded-full bg-gradient-to-r from-[#3065eb] to-[#ff4b81] text-white font-bold text-xs uppercase tracking-[2px] overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-xl shadow-blue-600/20">
-                    <span className="relative z-10 flex items-center gap-3">
-                      Submit Now <span className="text-lg transition-transform group-hover:translate-x-1">→</span>
+                <div className="pt-4">
+                  <button className="group relative w-full sm:w-auto px-16 py-6 rounded-full bg-blue-600 text-white font-black italic text-xs uppercase tracking-[0.3em] overflow-hidden transition-all hover:bg-white hover:text-blue-600 shadow-2xl shadow-blue-600/30">
+                    <span className="relative z-10 flex items-center justify-center gap-4">
+                      Initiate Deployment <ArrowRight size={20} className="transition-transform group-hover:translate-x-2" />
                     </span>
                   </button>
                 </div>

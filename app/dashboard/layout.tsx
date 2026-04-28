@@ -3,31 +3,43 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Sidebar from "./Sidebar";
 import { redirect } from "next/navigation";
 
+/**
+ * DashboardLayout - The main wrapper for all authenticated routes.
+ * Handles server-side session validation and sidebar rendering.
+ */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // 1. Fetching session on the server side
   const session = await getServerSession(authOptions);
 
-  // সেশন চেক
+  // 2. Redirect to login if no active session is found
   if (!session) {
     redirect("/login");
   }
 
-  // সেশন থেকে রোল নেওয়া (TypeScript এরর এড়াতে any ব্যবহার করা হয়েছে)
-  const userRole = (session?.user as any)?.role || "USER";
+  /** * 3. Extracting user role. 
+   * Since we added 'role' to the next-auth.d.ts file, 
+   * we no longer need 'as any' casting.
+   */
+  const userRole = session.user.role || "USER";
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      {/* বামপাশে ফিক্সড সাইডবার - ইউজার রোল পাস করা হয়েছে */}
-      <aside className="w-64 bg-slate-900 h-full hidden md:block flex-shrink-0">
+    <div className="flex h-screen bg-[#F8F9FB] overflow-hidden">
+      
+      {/* Sidebar - Fixed on the left for medium screens and up */}
+      <aside className="w-72 bg-slate-900 h-full hidden md:block flex-shrink-0">
         <Sidebar userRole={userRole} />
       </aside>
 
-      {/* ডানপাশে ডাইনামিক কন্টেন্ট */}
+      {/* Dynamic Content Area */}
       <main className="flex-1 h-full overflow-y-auto p-4 md:p-8">
-        {/* কন্টেন্ট এরিয়া */}
         <div className="max-w-7xl mx-auto">
-           {children}
+          {/* This is where the specific page content (Admin, Leader, Employee) 
+            will be injected based on the route.
+          */}
+          {children}
         </div>
       </main>
+
     </div>
   );
 }

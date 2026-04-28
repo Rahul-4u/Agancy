@@ -1,10 +1,10 @@
 "use client";
+
 import { useEffect, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Send } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Register ScrollTrigger
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
@@ -16,110 +16,109 @@ export default function Newsletter() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // ১. মেইন কার্ডটি নিচ থেকে আসবে
+      // 1. Card Entry
       gsap.from(contentRef.current, {
-        y: 60,
+        y: 80,
         opacity: 0,
-        duration: 1.2,
-        ease: "power3.out",
+        duration: 1.5,
+        ease: "expo.out",
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 90%",
+        }
+      });
+
+      // 2. Text Reveal
+      gsap.from(".text-animate", {
+        x: -40,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power4.out",
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top 85%",
         }
       });
 
-      // ২. টেক্সটগুলো একটু দেরি করে আসবে
-      gsap.from(".text-animate", {
-        x: -30,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        delay: 0.3,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 80%",
-        }
-      });
-
-      // ৩. ইনপুট বক্সটি ডান পাশ থেকে আসবে
-      gsap.from(inputRef.current, {
-        x: 40,
-        opacity: 0,
-        duration: 1,
-        delay: 0.5,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 80%",
-        }
-      });
-
-      // ৪. ব্যাকগ্রাউন্ডের গ্লো গুলোর মুভিং অ্যানিমেশন (সবসময় চলবে)
+      // 3. Constant Background Ambient Pulse
       gsap.to(".bg-glow-pulse", {
-        scale: 1.2,
-        opacity: 0.15,
-        duration: 3,
+        scale: 1.3,
+        opacity: 0.2,
+        duration: 4,
         repeat: -1,
         yoyo: true,
-        stagger: 1,
+        stagger: 2,
         ease: "sine.inOut"
       });
     });
 
-    return () => ctx.revert(); // ক্লিনআপ
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={containerRef} className="bg-[#0B1120] py-16 px-6 relative overflow-hidden border-t border-white/5">
+    <section ref={containerRef} className="bg-[#030712] py-24 px-6 relative overflow-hidden border-t border-white/5">
       
-      {/* --- Tech Background Animation --- */}
+      {/* Tech-Background Layer */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute left-0 top-0 h-full w-1/3 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] opacity-10 [mask-image:linear-gradient(to_right,black,transparent)]"></div>
-        <div className="absolute right-0 top-0 h-full w-1/3 bg-[url('https://www.transparenttextures.com/patterns/circuit-board.png')] opacity-10 [mask-image:linear-gradient(to_left,black,transparent)] rotate-180"></div>
+        {/* Animated Glows - Matching REBACK Colors */}
+        <div className="bg-glow-pulse absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-blue-600/10 blur-[120px] rounded-full"></div>
+        <div className="bg-glow-pulse absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-[#ffd600]/5 blur-[120px] rounded-full"></div>
         
-        {/* Animated Glows */}
-        <div className="bg-glow-pulse absolute top-1/2 left-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-blue-600/10 blur-[100px] rounded-full"></div>
-        <div className="bg-glow-pulse absolute top-1/2 right-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-pink-600/10 blur-[100px] rounded-full"></div>
+        {/* Grid Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div 
           ref={contentRef}
-          className="flex flex-col lg:flex-row items-center justify-between gap-12 bg-[#111827]/40 backdrop-blur-xl p-10 md:p-16 rounded-[40px] border border-white/5"
+          className="flex flex-col lg:flex-row items-center justify-between gap-12 bg-white/[0.02] backdrop-blur-3xl p-10 md:p-20 rounded-[60px] border border-white/10 shadow-2xl"
         >
           
-          {/* Text Content */}
-          <div className="space-y-4 text-center lg:text-left">
-            <h2 className="text-animate text-3xl md:text-5xl font-bold text-white tracking-tight">
-              Subscribe to Our <br />
-              <span className="bg-gradient-to-r from-blue-400 to-pink-500 bg-clip-text text-transparent">
-                Newsletter
-              </span>
+          {/* Header Content */}
+          <div className="space-y-6 text-center lg:text-left">
+            <div className="flex items-center justify-center lg:justify-start gap-3">
+                <div className="w-10 h-[2px] bg-blue-500"></div>
+                <span className="text-blue-500 font-black italic uppercase tracking-[0.3em] text-[10px]">Stay Synced</span>
+            </div>
+            <h2 className="text-animate text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-[0.95]">
+              Join the <br />
+              <span className="text-[#ffd600]">Intel</span> <span className="text-blue-500">Network</span>
             </h2>
-            <p className="text-animate text-gray-400 text-sm md:text-base max-w-sm">
-              Get the latest SEO tips and software insights straight to your inbox.
+            <p className="text-animate text-slate-400 font-medium italic text-sm md:text-lg max-w-sm leading-relaxed">
+              Architect your inbox with the latest enterprise tech strategies and digital flow reports.
             </p>
           </div>
 
-          {/* Subscription Form */}
-          <div ref={inputRef} className="w-full max-w-lg">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center bg-[#0B1120] border border-white/10 rounded-2xl p-1.5 focus-within:border-blue-500/50 transition-all shadow-inner">
-                <input 
-                  type="email" 
-                  placeholder="Enter email address" 
-                  className="bg-transparent border-none outline-none text-white px-5 py-3 w-full text-sm placeholder:text-gray-500"
-                />
-                <button className="bg-gradient-to-r from-blue-600 to-pink-500 text-white px-8 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-blue-500/20 active:scale-95 whitespace-nowrap">
-                  Subscribe Now <ArrowRight size={18} />
-                </button>
+          {/* Form Content */}
+          <div ref={inputRef} className="w-full max-w-xl">
+            <div className="flex flex-col gap-6">
+              <div className="relative group">
+                <div className="flex flex-col md:flex-row items-center bg-[#030712] border border-white/10 rounded-[30px] p-2 focus-within:border-blue-500/50 transition-all shadow-2xl">
+                  <div className="flex items-center flex-1 w-full px-4">
+                    <Send size={18} className="text-slate-600 mr-2" />
+                    <input 
+                      type="email" 
+                      placeholder="YOUR@ENTERPRISE.EMAIL" 
+                      className="bg-transparent border-none outline-none text-white px-4 py-5 w-full text-[12px] font-black italic tracking-widest placeholder:text-slate-700"
+                    />
+                  </div>
+                  <button className="w-full md:w-auto bg-blue-600 text-white px-10 py-5 rounded-[24px] font-black italic text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white hover:text-blue-600 transition-all shadow-xl shadow-blue-600/20 active:scale-95 whitespace-nowrap">
+                    Subscribe <ArrowRight size={18} />
+                  </button>
+                </div>
               </div>
               
-              <label className="flex items-center gap-3 cursor-pointer group px-2">
-                <input type="checkbox" className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900" />
-                <span className="text-gray-400 text-xs md:text-sm">
-                  By subscribing, you accept our <span className="text-white hover:underline">Privacy Policy</span>
+              {/* Compliance Label */}
+              <label className="flex items-center gap-4 cursor-pointer group px-4">
+                <div className="relative flex items-center">
+                    <input type="checkbox" className="peer appearance-none w-5 h-5 rounded border border-white/10 bg-white/5 checked:bg-blue-600 checked:border-blue-600 transition-all cursor-pointer" />
+                    <div className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-1 top-1">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                </div>
+                <span className="text-slate-500 font-bold italic text-[11px] uppercase tracking-wider group-hover:text-slate-300 transition-colors">
+                  I accept the <span className="text-blue-500 underline underline-offset-4">REBACK data protocols</span> & Privacy Policy
                 </span>
               </label>
             </div>

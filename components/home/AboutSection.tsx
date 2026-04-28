@@ -1,108 +1,121 @@
 "use client";
-import React from 'react';
-import { CheckCircle2, PhoneCall } from 'lucide-react';
 
+import React from 'react';
+import { CheckCircle2, PhoneCall, ArrowRight } from 'lucide-react';
+
+/**
+ * AboutSection Component
+ * Featuring overlapping image geometry and premium typography.
+ */
 const AboutSection = () => {
   return (
-    <section className="bg-[#030712] py-24 lg:py-36 relative overflow-hidden">
+    <section className="bg-[#030712] py-24 lg:py-40 relative overflow-hidden">
+      
+      {/* Decorative Background Elements */}
+      <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
+      
       <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
           
-          {/* ১. ইমেজ সেকশন - ডেমো সাইটের মতো ওভারল্যাপ */}
-          <div className="lg:col-span-5 relative h-[500px] md:h-[600px]">
+          {/* 1. Image Montage Section */}
+          <div className="lg:col-span-5 relative h-[500px] md:h-[650px] w-full">
             
-            {/* বড় মেইন ইমেজ (পিছনেরটা) */}
-            <div className="absolute top-0 left-0 w-[85%] h-[85%] rounded-[40px] overflow-hidden border-2 border-white/5 shadow-2xl">
-              <div className="absolute inset-0 bg-blue-600/10 z-10" /> {/* হালকা নীল আভা */}
+            {/* Main Background Image */}
+            <div className="absolute top-0 left-0 w-[88%] h-[85%] rounded-[48px] overflow-hidden border border-white/5 shadow-2xl">
+              <div className="absolute inset-0 bg-blue-600/10 z-10" />
               <img 
-                src="/images/about.jpg" 
-                alt="IT Specialist" 
-                className="w-full h-full object-cover"
+                src="https://images.unsplash.com/photo-1573163281530-5be9c81b3096?q=80&w=2070" 
+                alt="Infrastructure" 
+                className="w-full h-full object-cover grayscale"
               />
             </div>
 
-            {/* ছোট ওভারল্যাপিং ইমেজ (সামনেরটা) */}
-            <div className="absolute bottom-0 right-0 w-[60%] h-[55%] rounded-[35px] overflow-hidden border-[10px] border-[#030712] shadow-[-20px_-20px_50px_rgba(0,0,0,0.5)] z-20">
+            {/* Overlapping Foreground Image */}
+            <div className="absolute bottom-0 right-0 w-[65%] h-[58%] rounded-[40px] overflow-hidden border-[12px] border-[#030712] shadow-[-20px_-20px_60px_rgba(0,0,0,0.6)] z-20">
               <img 
-                src="/images/hero-woman.png" 
-                alt="Tech Girl" 
-                className="w-full h-full object-cover"
+                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070" 
+                alt="Specialist" 
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
               />
             </div>
 
-            {/* ক্লায়েন্ট ব্যাজ - পজিশন ফিক্সড */}
-            <div className="absolute bottom-10 -left-10 z-30 bg-[#0a101f] border border-white/10 px-6 py-4 rounded-2xl shadow-2xl hidden md:block">
-              <div className="flex -space-x-3 mb-2">
+            {/* Client Success Badge */}
+            <div className="absolute bottom-12 -left-8 z-30 bg-[#0a101f]/90 backdrop-blur-xl border border-white/10 px-8 py-5 rounded-[24px] shadow-2xl hidden md:block">
+              <div className="flex -space-x-3 mb-3">
                 {[1, 2, 3].map((i) => (
-                  <img key={i} src={`https://i.pravatar.cc/100?u=${i}`} className="w-10 h-10 rounded-full border-2 border-[#0a101f]" alt="" />
+                  <div key={i} className="w-11 h-11 rounded-full border-2 border-[#0a101f] overflow-hidden">
+                    <img src={`https://i.pravatar.cc/150?u=${i+10}`} alt="User" />
+                  </div>
                 ))}
-                <div className="w-10 h-10 rounded-full bg-[#ffd600] flex items-center justify-center text-black font-bold text-xs border-2 border-[#0a101f]">+</div>
+                <div className="w-11 h-11 rounded-full bg-[#ffd600] flex items-center justify-center text-black font-black text-xs border-2 border-[#0a101f]">+</div>
               </div>
-              <p className="text-white font-bold text-[13px] whitespace-nowrap">120K Satisfied Client</p>
+              <p className="text-white font-black italic uppercase text-[11px] tracking-widest">120K+ Global Clients</p>
             </div>
           </div>
 
-          {/* ২. টেক্সট কন্টেন্ট সেকশন */}
-          <div className="lg:col-span-7 space-y-8">
-            <div className="space-y-4">
+          {/* 2. Text Content Section */}
+          <div className="lg:col-span-7 space-y-10">
+            <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-[2px] bg-[#3065eb]" />
-                <span className="text-[#3065eb] font-black uppercase tracking-[3px] text-xs">About Us</span>
-                <div className="w-2 h-[2px] bg-[#3065eb]" />
+                <div className="w-12 h-[2px] bg-[#3065eb]" />
+                <span className="text-[#3065eb] font-black italic uppercase tracking-[0.3em] text-[10px]">Our Mission</span>
               </div>
               
-              <h2 className="text-[38px] md:text-[55px] font-[1000] text-white leading-[1.1] tracking-tight">
+              <h2 className="text-[40px] md:text-[64px] font-black italic text-white leading-[0.95] tracking-tighter uppercase">
                 Unlock Your Business <span className="text-[#ffd600]">Potential</span> <br />
-                with Our best Cutting-Edge <br />
-                <span className="text-[#3065eb]">IT Solutions to grow</span>
+                With <span className="text-[#3065eb]">Elite Tech</span> Strategies
               </h2>
               
-              <p className="text-gray-400 text-lg leading-relaxed max-w-2xl font-medium">
-                Transform your business with our innovative IT solutions, tailored to address your unique challenges and drive growth in today's digital landscape.
+              <p className="text-slate-400 text-lg font-medium italic leading-relaxed max-w-2xl">
+                Transform your digital architecture with innovative IT solutions. We address your unique complexities and drive exponential growth in the 2026 landscape.
               </p>
             </div>
 
-            {/* ফিচার গ্রিড */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-10 py-8 border-y border-white/5">
+            {/* Feature Check-list */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 py-10 border-y border-white/5">
               {[
-                "Customized Solutions for Every Business",
-                "Scalable Infrastructure for Growth",
-                "Enhanced Security and Data Protection",
-                "Continuous system monitoring support"
+                "Customized Enterprise Solutions",
+                "Scalable Growth Infrastructure",
+                "Advanced Cyber Protection",
+                "24/7 Real-Time Monitoring"
               ].map((text, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#3065eb]/10 flex items-center justify-center border border-[#3065eb]/20">
-                    <CheckCircle2 size={14} className="text-[#3065eb]" strokeWidth={3} />
+                <div key={idx} className="flex items-center gap-4 group">
+                  <div className="w-7 h-7 rounded-full bg-[#3065eb]/10 flex items-center justify-center border border-[#3065eb]/20 group-hover:bg-[#3065eb] group-hover:text-white transition-all">
+                    <CheckCircle2 size={16} strokeWidth={3} className="text-[#3065eb] group-hover:text-white" />
                   </div>
-                  <span className="text-gray-200 font-bold text-[15px]">{text}</span>
+                  <span className="text-slate-200 font-black italic uppercase text-[13px] tracking-tight">{text}</span>
                 </div>
               ))}
             </div>
 
-            {/* ফুটার কন্ট্রোলস */}
-            <div className="flex flex-wrap items-center gap-10">
+            {/* CTA and Contact Row */}
+            <div className="flex flex-wrap items-center gap-12">
+              {/* Experience Stat */}
               <div className="flex items-center gap-4">
-                <span className="text-[50px] font-black text-[#ffd600] leading-none">25</span>
-                <p className="text-gray-400 text-[10px] font-black uppercase leading-tight tracking-[1.5px]">
-                  Years of <br /> Experience
+                <span className="text-[60px] font-black text-[#ffd600] leading-none italic tracking-tighter">25</span>
+                <p className="text-slate-500 text-[10px] font-black italic uppercase leading-none tracking-[2px]">
+                  Years of <br /> Excellence
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-[#3065eb]/10 flex items-center justify-center text-[#3065eb] border border-[#3065eb]/20">
-                  <PhoneCall size={24} strokeWidth={2.5} />
+              {/* Inquiry Line */}
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-[20px] bg-white/5 flex items-center justify-center text-[#3065eb] border border-white/10 shadow-xl">
+                  <PhoneCall size={28} strokeWidth={2} />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Call Us For Inquiry</p>
-                  <p className="text-white font-black text-xl tracking-tighter">00 (123) 456767</p>
+                  <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest mb-1 italic">Contact Hub</p>
+                  <p className="text-white font-black text-2xl tracking-tighter italic">00 (123) 456767</p>
                 </div>
               </div>
 
-              <button className="bg-[#3065eb] text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white hover:text-[#3065eb] transition-all duration-300 shadow-lg shadow-[#3065eb]/20">
-                Learn More <span className="ml-2">→</span>
+              {/* Button */}
+              <button className="group bg-[#3065eb] text-white px-12 py-6 rounded-full font-black italic uppercase text-xs tracking-widest hover:bg-white hover:text-[#3065eb] transition-all duration-500 flex items-center gap-3">
+                Learn More <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </section>
