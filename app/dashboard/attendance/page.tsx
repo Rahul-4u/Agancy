@@ -6,6 +6,16 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
+// ১. ডাটা টাইপ ইন্টারফেস তৈরি করা (এরর এড়ানোর জন্য)
+interface AttendanceLog {
+  id: string;
+  date: string;
+  checkIn?: string;
+  checkOut?: string;
+  status: string;
+  lateMinutes?: number;
+}
+
 export default function EmployeeDashboard() {
   const [stats, setStats] = useState({
     total: 30, 
@@ -14,11 +24,12 @@ export default function EmployeeDashboard() {
     leave: 0,
     late: 0
   });
-  const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
+  
+  // ২. any[] এর বদলে ইন্টারফেস ব্যবহার করা
+  const [attendanceHistory, setAttendanceHistory] = useState<AttendanceLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
 
-  // Sync attendance logs and stats
   const syncAttendanceData = async () => {
     try {
       const response = await fetch("/api/attendance");
@@ -27,8 +38,8 @@ export default function EmployeeDashboard() {
       if (response.ok) {
         setAttendanceHistory(data);
         
-        // Calculate dynamic stats from logs
-        const lateCount = data.filter((item: any) => item.status === "LATE").length;
+        // ৩. ক্যালকুলেশনের সময় টাইপ সেফটি নিশ্চিত করা
+        const lateCount = data.filter((item: AttendanceLog) => item.status === "LATE").length;
         const presentCount = data.length;
         
         setStats(prev => ({ 
@@ -38,7 +49,7 @@ export default function EmployeeDashboard() {
         }));
       }
     } catch (error) {
-      console.error("Critical Sync Error: Unable to fetch logs");
+      console.error("Critical Sync Error");
       toast.error("Failed to load attendance logs");
     } finally {
       setIsRefreshing(false);
@@ -49,11 +60,9 @@ export default function EmployeeDashboard() {
     syncAttendanceData();
   }, []);
 
-  // Process Check In/Out
   const processAttendanceRequest = async (type: "IN" | "OUT") => {
     setLoading(true);
     
-    // Time Format fix for Backend (e.g., 09:30 AM)
     const timestamp = new Date().toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit', 
@@ -71,7 +80,7 @@ export default function EmployeeDashboard() {
 
       if (res.ok) {
         toast.success(`Confirmed: ${type === 'IN' ? 'Checked In' : 'Checked Out'}`);
-        await syncAttendanceData(); // Refresh history immediately
+        await syncAttendanceData(); 
       } else {
         toast.error(payload.message || "Action Rejected");
       }
@@ -91,7 +100,6 @@ export default function EmployeeDashboard() {
   return (
     <div className="space-y-6 bg-[#F8F9FB] p-4 md:p-8 min-h-screen font-sans italic">
       
-      {/* Shift Registration Control */}
       <div className="bg-white p-6 md:p-10 rounded-[44px] border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black italic text-slate-900 tracking-tighter uppercase">Shift Manifest</h2>
@@ -117,7 +125,6 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4 bg-white p-8 rounded-[44px] shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden">
           <div className="absolute top-6 left-8">
@@ -144,7 +151,6 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* History Log Table */}
       <div className="bg-white rounded-[44px] border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex justify-between items-center">
            <h3 className="text-xl font-black italic uppercase tracking-tighter">Personal Attendance Log</h3>
@@ -189,7 +195,16 @@ export default function EmployeeDashboard() {
   );
 }
 
-function StatCard({ icon, label, value, color, bg }: any) {
+// ৪. StatCard প্রপস টাইপ ফিক্স করা
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+  bg: string;
+}
+
+function StatCard({ icon, label, value, color, bg }: StatCardProps) {
   return (
     <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center text-center hover:shadow-lg hover:shadow-slate-100 transition-all">
       <div className={`p-4 rounded-2xl mb-4 ${bg} ${color}`}>{icon}</div>
