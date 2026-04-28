@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Clock, Briefcase, Wallet, CheckCircle2, AlertCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import AttendanceButtons from "@/components/AttendanceButtons";
+import { authOptions } from "@/lib/auth";
 
 // 1. Defining Task Interface for Type Safety
 interface Task {

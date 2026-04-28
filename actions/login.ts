@@ -1,6 +1,7 @@
 "use server";
 
-import { signIn } from "@/auth";
+import { signIn } from "next-auth/react";
+
 
 export async function loginUser(prevState: any, formData: FormData) {
   const email = formData.get("email");

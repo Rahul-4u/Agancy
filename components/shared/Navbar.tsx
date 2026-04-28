@@ -111,7 +111,7 @@ export default function Navbar({ session }: { session?: any }) {
             <Link 
               key={link.name} 
               href={link.href} 
-              ref={el => linksRef.current[i] = el}
+              ref={(el) => { linksRef.current[i] = el; }}
               className="text-white hover:text-blue-400 transition-colors text-2xl font-bold flex items-center justify-between group"
               onClick={() => setSidebarOpen(false)}
             >

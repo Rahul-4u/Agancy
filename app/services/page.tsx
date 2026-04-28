@@ -2,9 +2,7 @@ import ServicesSection from '@/components/home/ServicesSection';
 import ServiceHero from '@/components/services/ServiceHero';
 import Navbar from '@/components/shared/Navbar';
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import React from 'react';
-
+import { authOptions } from "@/lib/auth";
 /**
  * Services Page
  * Displays the hero section and the list of available services.

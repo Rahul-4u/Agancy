@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 import Sidebar from "./Sidebar";
 import { redirect } from "next/navigation";
+import { authOptions } from "@/lib/auth";
 
 /**
  * DashboardLayout - The main wrapper for all authenticated routes.
@@ -20,7 +21,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
    * Since we added 'role' to the next-auth.d.ts file, 
    * we no longer need 'as any' casting.
    */
-  const userRole = session.user.role || "USER";
+  // @ts-ignore
+const userRole = (session?.user as any)?.role || "USER";
 
   return (
     <div className="flex h-screen bg-[#F8F9FB] overflow-hidden">
