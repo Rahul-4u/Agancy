@@ -1,12 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useMemo } from "react";
 import { 
-  Users, UserCheck, UserMinus, Plane, Calendar, Gift, 
-  Monitor, Smartphone, MonitorOff, Clock, Loader2, Navigation, AlertCircle 
+  UserCheck, Clock, Loader2, Navigation, ChevronLeft, ChevronRight 
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-// ১. ডাটা টাইপ ইন্টারফেস তৈরি করা (এরর এড়ানোর জন্য)
 interface AttendanceLog {
   id: string;
   date: string;
@@ -17,40 +16,22 @@ interface AttendanceLog {
 }
 
 export default function EmployeeDashboard() {
-  const [stats, setStats] = useState({
-    total: 30, 
-    present: 0,
-    absent: 0,
-    leave: 0,
-    late: 0
-  });
-  
-  // ২. any[] এর বদলে ইন্টারফেস ব্যবহার করা
   const [attendanceHistory, setAttendanceHistory] = useState<AttendanceLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(true);
+  
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   const syncAttendanceData = async () => {
     try {
-      const response = await fetch("/api/attendance");
+      const response = await fetch(`/api/attendance?month=${selectedMonth + 1}&year=${selectedYear}`);
       const data = await response.json();
-      
-      if (response.ok) {
-        setAttendanceHistory(data);
-        
-        // ৩. ক্যালকুলেশনের সময় টাইপ সেফটি নিশ্চিত করা
-        const lateCount = data.filter((item: AttendanceLog) => item.status === "LATE").length;
-        const presentCount = data.length;
-        
-        setStats(prev => ({ 
-          ...prev, 
-          present: presentCount, 
-          late: lateCount 
-        }));
-      }
+      if (response.ok) setAttendanceHistory(data);
     } catch (error) {
-      console.error("Critical Sync Error");
-      toast.error("Failed to load attendance logs");
+      toast.error("Failed to load data");
     } finally {
       setIsRefreshing(false);
     }
@@ -58,158 +39,128 @@ export default function EmployeeDashboard() {
 
   useEffect(() => {
     syncAttendanceData();
-  }, []);
+  }, [selectedMonth, selectedYear]);
 
-  const processAttendanceRequest = async (type: "IN" | "OUT") => {
+  const fullMonthLogs = useMemo(() => {
+    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const logs = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const currentDate = new Date(selectedYear, selectedMonth, d);
+      const dateKey = currentDate.toISOString().split('T')[0];
+      const existing = attendanceHistory.find(log => log.date.startsWith(dateKey));
+
+      if (existing) {
+        logs.push(existing);
+      } else {
+        const isWeekend = currentDate.getDay() === 5; // Friday
+        const isPast = currentDate < new Date().setHours(0,0,0,0);
+        logs.push({
+          id: dateKey,
+          date: dateKey,
+          status: isWeekend ? "WEEKEND" : (isPast ? "ABSENT" : "--"),
+          checkIn: "--",
+          checkOut: "--"
+        });
+      }
+    }
+    return logs.reverse(); 
+  }, [attendanceHistory, selectedMonth, selectedYear]);
+
+  const processAttendance = async (type: "IN" | "OUT") => {
     setLoading(true);
-    
-    const timestamp = new Date().toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: true 
-    });
-
     try {
       const res = await fetch("/api/attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, time: timestamp }),
+        body: JSON.stringify({ type, time: new Date().toLocaleTimeString() }),
       });
-
-      const payload = await res.json();
-
       if (res.ok) {
-        toast.success(`Confirmed: ${type === 'IN' ? 'Checked In' : 'Checked Out'}`);
-        await syncAttendanceData(); 
-      } else {
-        toast.error(payload.message || "Action Rejected");
+        toast.success(`Clocked ${type === 'IN' ? 'In' : 'Out'}`);
+        syncAttendanceData();
       }
-    } catch (error) {
-      toast.error("Network communication failure");
+    } catch (err) {
+      toast.error("Network error");
     } finally {
       setLoading(false);
     }
   };
 
-  if (isRefreshing) return (
-    <div className="h-screen flex items-center justify-center bg-[#F8F9FB]">
-       <Loader2 className="animate-spin text-blue-600" size={40} />
-    </div>
-  );
+  if (isRefreshing) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>;
 
   return (
-    <div className="space-y-6 bg-[#F8F9FB] p-4 md:p-8 min-h-screen font-sans italic">
+    <div className="max-w-6xl mx-auto space-y-4 p-3 md:p-6 font-sans italic tracking-tighter">
       
-      <div className="bg-white p-6 md:p-10 rounded-[44px] border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-6">
+      {/* Header - Compact */}
+      <div className="bg-white p-5 rounded-[30px] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h2 className="text-3xl font-black italic text-slate-900 tracking-tighter uppercase">Shift Manifest</h2>
-          <p className="text-[10px] text-blue-600 font-bold uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-            <Navigation size={12}/> Operational Zone: Dhaka HQ
+          <h2 className="text-2xl font-black uppercase italic leading-none">Shift Manifest</h2>
+          <p className="text-[9px] text-blue-600 font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
+            <Navigation size={10}/> Office: 09:00 AM - 06:00 PM
           </p>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => processAttendanceRequest("IN")}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 md:px-10 py-4 md:py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-blue-100 active:scale-95 disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={18} />} CLOCK IN
-          </button>
-          <button 
-            onClick={() => processAttendanceRequest("OUT")}
-            disabled={loading}
-            className="bg-slate-900 hover:bg-black text-white px-8 md:px-10 py-4 md:py-5 rounded-[24px] font-black text-xs flex items-center gap-3 transition-all shadow-xl shadow-slate-100 active:scale-95 disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : <Clock size={18} />} CLOCK OUT
-          </button>
+        <div className="flex gap-2 w-full md:w-auto">
+          <button onClick={() => processAttendance("IN")} disabled={loading} className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-[11px] active:scale-95 transition-all">IN</button>
+          <button onClick={() => processAttendance("OUT")} disabled={loading} className="flex-1 bg-black text-white px-6 py-3 rounded-2xl font-black text-[11px] active:scale-95 transition-all">OUT</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4 bg-white p-8 rounded-[44px] shadow-sm border border-slate-100 flex flex-col items-center justify-center relative overflow-hidden">
-          <div className="absolute top-6 left-8">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Monthly Quota</h3>
-          </div>
-          <div className="relative w-44 h-44 flex items-center justify-center">
-             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="88" cy="88" r="75" stroke="#F1F5F9" strokeWidth="15" fill="transparent" />
-              <circle cx="88" cy="88" r="75" stroke="#3B82F6" strokeWidth="15" fill="transparent" 
-                strokeDasharray="471" strokeDashoffset={`${471 - (Math.min(stats.present, 30) / 30) * 471}`} strokeLinecap="round" />
-            </svg>
-            <div className="absolute text-center">
-              <span className="text-4xl font-black block text-slate-900 tracking-tighter">{stats.present}</span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Days Active</span>
-            </div>
-          </div>
+      {/* Month Switcher - Responsive & Small */}
+      <div className="bg-white p-2 rounded-2xl border shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar">
+        <button onClick={() => setSelectedYear(y => y - 1)} className="p-1"><ChevronLeft size={16}/></button>
+        <div className="flex gap-1">
+          {months.map((m, i) => (
+            <button
+              key={m}
+              onClick={() => setSelectedMonth(i)}
+              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${selectedMonth === i ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-400"}`}
+            >
+              {m}
+            </button>
+          ))}
         </div>
-
-        <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={<UserCheck size={20}/>} label="Attendance" value={stats.present} color="text-blue-600" bg="bg-blue-50" />
-          <StatCard icon={<AlertCircle size={20}/>} label="Late Records" value={stats.late} color="text-rose-600" bg="bg-rose-50" />
-          <StatCard icon={<Plane size={20}/>} label="Leave Taken" value={stats.leave} color="text-emerald-600" bg="bg-emerald-50" />
-          <StatCard icon={<Calendar size={20}/>} label="Off Days" value="4" color="text-slate-400" bg="bg-slate-50" />
-        </div>
+        <span className="text-xs font-black px-2">{selectedYear}</span>
+        <button onClick={() => setSelectedYear(y => y + 1)} className="p-1"><ChevronRight size={16}/></button>
       </div>
 
-      <div className="bg-white rounded-[44px] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-           <h3 className="text-xl font-black italic uppercase tracking-tighter">Personal Attendance Log</h3>
-           <span className="text-[10px] font-black bg-slate-100 px-4 py-2 rounded-full uppercase">April 2026</span>
+      {/* Table Section - Compact & Responsive */}
+      <div className="bg-white rounded-[30px] border shadow-sm overflow-hidden">
+        <div className="p-5 border-b flex justify-between items-center bg-slate-50/30">
+           <h3 className="text-sm font-black uppercase tracking-tighter">Attendance Log</h3>
+           <span className="text-[10px] font-bold text-blue-600">{months[selectedMonth]} {selectedYear}</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
               <tr>
-                <th className="px-8 py-6">Calendar Date</th>
-                <th className="px-8 py-6">Clock In</th>
-                <th className="px-8 py-6">Clock Out</th>
-                <th className="px-8 py-6 text-right">Status</th>
+                <th className="px-5 py-3 text-center">Date</th>
+                <th className="px-5 py-3 text-center">In</th>
+                <th className="px-5 py-3 text-center">Out</th>
+                <th className="px-5 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {attendanceHistory.length > 0 ? attendanceHistory.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-8 py-6 font-black text-slate-700 text-sm italic">
-                    {new Date(log.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+            <tbody className="divide-y divide-slate-100">
+              {fullMonthLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-5 py-3 font-bold text-slate-700 text-xs">
+                    {new Date(log.date).getDate()} {months[new Date(log.date).getMonth()]}
                   </td>
-                  <td className="px-8 py-6 text-xs font-bold text-slate-500">{log.checkIn || '--'}</td>
-                  <td className="px-8 py-6 text-xs font-bold text-slate-500">{log.checkOut || '--'}</td>
-                  <td className="px-8 py-6 text-right">
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                      log.status === 'LATE' ? 'bg-rose-600 text-white shadow-lg shadow-rose-100' : 'bg-emerald-500 text-white'
+                  <td className="px-5 py-3 text-[10px] font-bold text-slate-500 text-center">{log.checkIn}</td>
+                  <td className="px-5 py-3 text-[10px] font-bold text-slate-500 text-center">{log.checkOut}</td>
+                  <td className="px-5 py-3 text-right">
+                    <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter ${
+                      log.status === 'PRESENT' || log.status === 'ON TIME' ? 'bg-green-500 text-white' :
+                      log.status === 'WEEKEND' ? 'bg-orange-500 text-white' :
+                      log.status === 'ABSENT' ? 'bg-red-600 text-white' : 'text-slate-300'
                     }`}>
-                      {log.status === 'LATE' ? `${log.lateMinutes}M LATE` : 'ON TIME'}
+                      {log.status}
                     </span>
                   </td>
                 </tr>
-              )) : (
-                <tr>
-                  <td colSpan={4} className="text-center py-20 text-slate-300 font-bold italic">No records found for this period.</td>
-                </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ৪. StatCard প্রপস টাইপ ফিক্স করা
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  color: string;
-  bg: string;
-}
-
-function StatCard({ icon, label, value, color, bg }: StatCardProps) {
-  return (
-    <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex flex-col items-center justify-center text-center hover:shadow-lg hover:shadow-slate-100 transition-all">
-      <div className={`p-4 rounded-2xl mb-4 ${bg} ${color}`}>{icon}</div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-      <span className={`text-2xl font-black italic tracking-tighter ${color}`}>{value}</span>
     </div>
   );
 }
