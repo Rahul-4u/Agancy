@@ -10,7 +10,7 @@ export default function EmployeeProfile() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [uploading, setUploading] = useState(false); // ইমেজ আপলোড লোডার
+  const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -20,6 +20,7 @@ export default function EmployeeProfile() {
     image: "",
   });
 
+  // ডাটাবেস থেকে ডাটা লোড করা
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -43,7 +44,7 @@ export default function EmployeeProfile() {
     fetchProfile();
   }, []);
 
-  // ইমেজ আপলোড হ্যান্ডলার (Cloudinary Example)
+  // ইমেজ আপলোড হ্যান্ডলার (Cloudinary)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -51,10 +52,11 @@ export default function EmployeeProfile() {
     setUploading(true);
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "your_preset"); // আপনার Cloudinary Preset দিন
+    // Cloudinary ড্যাশবোর্ড থেকে তৈরি করা 'Unsigned Preset' নাম এখানে দিন
+    data.append("upload_preset", "techagency"); 
 
     try {
-      const res = await fetch("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", {
+      const res = await fetch("https://api.cloudinary.com/v1_1/dgi2y2c0o/image/upload", {
         method: "POST",
         body: data,
       });
@@ -70,6 +72,7 @@ export default function EmployeeProfile() {
     }
   };
 
+  // প্রোফাইল ডাটা আপডেট করা
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -84,8 +87,10 @@ export default function EmployeeProfile() {
           ...session,
           user: { ...session?.user, ...formData }
         }); 
-        toast.success("Profile updated!");
+        toast.success("Profile updated successfully!");
         setIsEditing(false);
+      } else {
+        toast.error("Update failed");
       }
     } catch (error) {
       toast.error("Something went wrong");
@@ -111,7 +116,7 @@ export default function EmployeeProfile() {
         <button 
           onClick={() => setIsEditing(!isEditing)}
           className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm transition-all ${
-            isEditing ? "bg-slate-100 text-slate-600" : "bg-black text-white"
+            isEditing ? "bg-slate-100 text-slate-600" : "bg-black text-white hover:bg-zinc-800"
           }`}
         >
           {isEditing ? <><X size={16} /> CANCEL</> : <><Edit3 size={16} /> EDIT PROFILE</>}
@@ -121,7 +126,6 @@ export default function EmployeeProfile() {
       <div className="bg-white rounded-[48px] p-8 md:p-12 border shadow-sm">
         <div className="flex flex-col md:flex-row gap-12 items-center md:items-start">
           
-          {/* প্রোফাইল ইমেজ সেকশন আপডেট */}
           <div className="relative group">
             <div className="w-40 h-40 bg-slate-50 rounded-full flex items-center justify-center border-4 border-white shadow-xl overflow-hidden relative">
               {formData.image ? (
@@ -129,47 +133,29 @@ export default function EmployeeProfile() {
               ) : (
                 <User size={80} className="text-slate-200" />
               )}
-              
-              {/* আপলোডিং ইন্ডিকেটর */}
               {uploading && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <Loader2 className="animate-spin text-white" size={24} />
                 </div>
               )}
             </div>
-
-            {/* ক্যামেরা আইকন (শুধুমাত্র এডিট মোডে দেখাবে) */}
             {isEditing && (
               <label className="absolute bottom-2 right-2 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition-all cursor-pointer">
                 <Camera size={20} />
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  onChange={handleImageUpload} 
-                  accept="image/*" 
-                  disabled={uploading}
-                />
+                <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" disabled={uploading} />
               </label>
             )}
           </div>
 
           <div className="flex-1 w-full space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-              <InfoField 
-                label="Full Name" 
-                value={formData.name} 
-                isEditing={isEditing}
-                icon={<User size={18}/>}
-                onChange={(val: string) => setFormData({...formData, name: val})}
-              />
-
+              <InfoField label="Full Name" value={formData.name} isEditing={isEditing} icon={<User size={18}/>} onChange={(val: string) => setFormData({...formData, name: val})} />
               <div className="space-y-3">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em]">Email Address</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] ml-1">Email Address</p>
                 <div className="p-4 rounded-2xl bg-slate-50 border border-transparent font-bold italic opacity-70">
                   {session?.user?.email}
                 </div>
               </div>
-
               <InfoField label="Designation" value={formData.designation} isEditing={isEditing} icon={<Briefcase size={18}/>} onChange={(val: string) => setFormData({...formData, designation: val})} />
               <InfoField label="Department" value={formData.department} isEditing={isEditing} icon={<Building size={18}/>} onChange={(val: string) => setFormData({...formData, department: val})} />
               <InfoField label="Phone" value={formData.phone} isEditing={isEditing} icon={<Phone size={18}/>} onChange={(val: string) => setFormData({...formData, phone: val})} />
@@ -180,7 +166,7 @@ export default function EmployeeProfile() {
                 <button 
                   onClick={handleSave} 
                   disabled={loading || uploading}
-                  className="bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-600 transition-all flex items-center gap-3 disabled:opacity-50"
+                  className="bg-black text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-600 transition-all flex items-center gap-3 disabled:opacity-50 shadow-xl"
                 >
                   {loading ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
                   SAVE CHANGES
@@ -201,17 +187,12 @@ function InfoField({ label, value, isEditing, icon, onChange }: any) {
       {isEditing ? (
         <div className="relative">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>
-          <input 
-            type="text" 
-            value={value} 
-            onChange={(e) => onChange(e.target.value)} 
-            className="w-full p-4 pl-12 rounded-2xl border border-slate-200 bg-white focus:border-blue-500 outline-none text-sm font-bold italic text-black" 
-          />
+          <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="w-full p-4 pl-12 rounded-2xl border border-slate-200 bg-white focus:border-blue-500 outline-none text-sm font-bold italic" />
         </div>
       ) : (
         <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/30">
           <div className="text-slate-400">{icon}</div>
-          <p className="text-sm font-bold italic text-black">{value || "Not set"}</p>
+          <p className="text-sm font-bold italic">{value || "Not set"}</p>
         </div>
       )}
     </div>

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/lib/auth"; // সরাসরি lib থেকে ইমপোর্ট করলে এরর থাকবে না
+import { authOptions } from "@/lib/auth"; 
 
-export async function POST(req: Request) {
+// এটি যোগ করতে হবে
+export async function POST(req: Request) { 
   try {
     const session = await getServerSession(authOptions);
 
@@ -19,11 +20,11 @@ export async function POST(req: Request) {
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {
-        name,
-        phone,
-        designation,
-        department,
-        image,
+        name: name || undefined,
+        phone: phone || undefined,
+        designation: designation || undefined,
+        department: department || undefined,
+        image: image || undefined, // এখানে ইমেজ লিঙ্কটি সেভ হ
       },
     });
 
