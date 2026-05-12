@@ -16,12 +16,12 @@ export async function loginUser(prevState: any, formData: FormData) {
     
     return { success: "Logged in!" };
   } catch (error: any) {
-    // Next.js এর রিডাইরেক্ট এরর হ্যান্ডেল করা (যাতে লগইন কাজ করে)
+    // Next.js 
     if (error?.message?.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
-    // ভুল পাসওয়ার্ড বা ইমেইলের জন্য এরর মেসেজ
+    // 
     if (error?.type === "CredentialsSignin" || error?.code === "credentials") {
       return { error: "Invalid credentials!" };
     }
